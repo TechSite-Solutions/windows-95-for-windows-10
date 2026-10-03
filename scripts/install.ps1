@@ -5,7 +5,8 @@ param(
     [switch]$SkipDesktopIcons,
     [switch]$SkipRestorePoint,
     [switch]$NoLaunch,
-    [switch]$AllowUnsupportedWindows
+    [switch]$AllowUnsupportedWindows,
+    [string]$ImportAssetsFrom
 )
 
 Set-StrictMode -Version Latest
@@ -31,9 +32,7 @@ $backupPath = $null
 
 try {
     $backupPath = & (Join-Path $PSScriptRoot "backup.ps1") -PassThru
-    if (-not $backupPath) {
-        throw "Backup did not return a path."
-    }
+    if (-not $backupPath) { throw "Backup did not return a path." }
 
     $state = [ordered]@{
         SchemaVersion = 2
@@ -43,26 +42,21 @@ try {
         OpenShellPreExisting = $openShellBefore
         RetroBarInstalledByProject = $false
         OpenShellInstalledByProject = $false
+        ImportedAssets = [bool]$ImportAssetsFrom
         Completed = $false
     }
     $state | ConvertTo-Json -Depth 6 | Set-Content -Encoding UTF8 $stateFile
 
     if (-not $SkipRestorePoint) {
         $restoreScript = Join-Path $PSScriptRoot "create-restore-point.ps1"
-
         if (Get-IsAdministrator) {
             & $restoreScript
         } else {
             try {
                 $proc = Start-Process powershell.exe -Verb RunAs -Wait -PassThru -ArgumentList @(
-                    "-NoLogo",
-                    "-NoProfile",
-                    "-ExecutionPolicy", "Bypass",
-                    "-File", ('"{0}"' -f $restoreScript)
+                    "-NoLogo","-NoProfile","-ExecutionPolicy","Bypass","-File",('"{0}"' -f $restoreScript)
                 )
-                if ($proc.ExitCode -ne 0) {
-                    Write-Warning "Elevated restore-point helper returned $($proc.ExitCode)."
-                }
+                if ($proc.ExitCode -ne 0) { Write-Warning "Elevated restore-point helper returned $($proc.ExitCode)." }
             } catch {
                 Write-Warning "Restore-point elevation was cancelled or failed. Local rollback backup still exists."
             }
@@ -91,6 +85,10 @@ try {
         $state.OpenShellInstalledByProject = (-not $openShellBefore) -and [bool](Get-OpenShellExe)
     }
 
+    if ($ImportAssetsFrom) {
+        & (Join-Path $PSScriptRoot "import-user-assets.ps1") -SourceDirectory $ImportAssetsFrom -ApplyCursors -ApplySounds -ApplyIcons
+    }
+
     $state.Completed = $true
     $state.CompletedAt = (Get-Date).ToString("o")
     $state | ConvertTo-Json -Depth 6 | Set-Content -Encoding UTF8 $stateFile
@@ -98,28 +96,18 @@ try {
     if (-not $NoLaunch) {
         if (-not $SkipRetroBar) {
             $retroBar = Get-RetroBarExe
-            if ($retroBar) {
-                Stop-ProcessIfRunning -Name "RetroBar"
-                Start-Process $retroBar
-            }
+            if ($retroBar) { Stop-ProcessIfRunning -Name "RetroBar"; Start-Process $retroBar }
         }
-
         if (-not $SkipOpenShell) {
             $openShell = Get-OpenShellExe
-            if ($openShell) {
-                Stop-ProcessIfRunning -Name "StartMenu"
-                Start-Process $openShell
-            }
+            if ($openShell) { Stop-ProcessIfRunning -Name "StartMenu"; Start-Process $openShell }
         }
     }
 
     Write-Section "Validation"
     $verifyScript = Join-Path $PSScriptRoot "verify.ps1"
     $verify = Start-Process powershell.exe -Wait -PassThru -ArgumentList @(
-        "-NoLogo",
-        "-NoProfile",
-        "-ExecutionPolicy", "Bypass",
-        "-File", ('"{0}"' -f $verifyScript)
+        "-NoLogo","-NoProfile","-ExecutionPolicy","Bypass","-File",('"{0}"' -f $verifyScript)
     )
     if ($verify.ExitCode -ne 0) {
         Write-Warning "Verification reported a mismatch. Run .\scripts\verify.ps1 for details."
