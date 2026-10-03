@@ -1,6 +1,6 @@
 param(
     [switch]$ForceReinstall,
-    [switch]$NoConfigure
+    [switch]$NoLaunch
 )
 
 Set-StrictMode -Version Latest
@@ -18,7 +18,9 @@ if ($existing -and -not $ForceReinstall) {
     Write-Host "Stable release: $($asset.Tag)"
 
     $tempRoot = Join-Path $env:TEMP "Win95ForWin10-OpenShell"
+    Remove-Item $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
+
     $installer = Join-Path $tempRoot $asset.Name
     Invoke-FileDownload -Uri $asset.DownloadUrl -Destination $installer
 
@@ -39,7 +41,4 @@ if (-not $openShell) {
 }
 
 Write-Host "Open-Shell executable: $openShell"
-
-if (-not $NoConfigure) {
-    & (Join-Path $PSScriptRoot "configure-openshell.ps1")
-}
+& (Join-Path $PSScriptRoot "configure-openshell.ps1") -NoLaunch:$NoLaunch
