@@ -19,7 +19,8 @@ The repository now includes an automated core installation path:
 - SHA-256 verification of pinned third-party installers;
 - one-click rollback;
 - configuration verification;
-- user-owned cursor and sound import;
+- user-owned cursor, sound and desktop-icon import;
+- dry-run and interactive installer modes;
 - GitHub Actions PowerShell syntax validation.
 
 The main remaining milestone is native Windows 10 validation across DPI/multi-monitor configurations and optional deeper window-frame skinning.
@@ -47,10 +48,18 @@ Then double-click:
 
     Install.cmd
 
+For a guided menu, double-click:
+
+    Install-Interactive.cmd
+
 Or run from PowerShell:
 
     Set-ExecutionPolicy -Scope Process Bypass
     .\scripts\install.ps1
+
+Preview the full plan without changing Windows:
+
+    .\scripts\install.ps1 -DryRun
 
 The installer creates a rollback backup before making theme changes. Open-Shell installation can trigger a Windows UAC prompt.
 
@@ -101,7 +110,11 @@ If you legally own compatible assets, use:
 
     .\scripts\import-user-assets.ps1 -SourceDirectory "C:\MyWin95Assets" -ApplyCursors -ApplySounds -ApplyIcons
 
-You can also import and apply all supplied local assets during the main install:\n\n    .\\scripts\\install.ps1 -ImportAssetsFrom "C:\\MyWin95Assets"\n\nSee docs/ASSET-IMPORT.md.
+You can also import and apply all supplied local assets during the main install:
+
+    .\scripts\install.ps1 -ImportAssetsFrom "C:\MyWin95Assets"
+
+See docs/ASSET-IMPORT.md.
 
 ## Verification
 
