@@ -9,10 +9,11 @@ A reversible Windows 95 desktop experience for Windows 10.
 The repository now includes an automated core installation path:
 
 - Windows 95 color palette and teal desktop;
+- Full Shell mode: force Windows light system UI, disable transparency, classic Explorer/Control Panel behavior;
 - classic desktop/window metrics;
 - classic desktop namespace icons and Windows 95-era labels;
 - RetroBar installation and Windows 95-98 configuration;
-- Open-Shell installation and Classic1 / Classic Skin configuration;
+- Open-Shell installation with Start Menu + Classic Explorer, using a true single-column Classic1 / Classic Skin profile;
 - RetroBar-owned Start button with Open-Shell-owned Start menu;
 - automatic timestamped backup before changes;
 - best-effort System Restore point creation;
@@ -132,6 +133,7 @@ status.ps1 gives a readable overview. verify.ps1 checks the expected theme confi
 - docs/TROUBLESHOOTING.md — troubleshooting
 - docs/ARCHITECTURE.md — architecture
 - docs/DESIGN-SPEC.md — Windows 95 visual specification
+- docs/FULL-SHELL.md — Windows 95 shell conversion for Explorer/Control Panel/system surfaces
 - docs/FULL-CHROME.md — optional WindowBlinds/SkinStudio frame layer
 - docs/DEPENDENCIES.md — pinned external components
 - docs/ASSET-IMPORT.md — local user-owned assets
