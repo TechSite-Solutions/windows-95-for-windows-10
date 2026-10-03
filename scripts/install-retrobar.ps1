@@ -14,15 +14,17 @@ $existing = Get-RetroBarExe
 if ($existing -and -not $ForceReinstall) {
     Write-Host "RetroBar already installed: $existing"
 } else {
-    $asset = Get-LatestGitHubAsset -Repository "dremin/RetroBar" -AssetPattern "^RetroBar\.Installer\.zip$"
-    Write-Host "Stable release: $($asset.Tag)"
+    $manifest = Get-ComponentManifest
+    $component = $manifest.retrobar
 
+    Write-Host "Pinned release: $($component.version)"
     $tempRoot = Join-Path $env:TEMP "Win95ForWin10-RetroBar"
     Remove-Item $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
 
-    $zip = Join-Path $tempRoot $asset.Name
-    Invoke-FileDownload -Uri $asset.DownloadUrl -Destination $zip
+    $zip = Join-Path $tempRoot ([string]$component.asset)
+    Invoke-FileDownload -Uri ([string]$component.url) -Destination $zip
+    Assert-FileSha256 -Path $zip -Expected ([string]$component.sha256)
     Expand-Archive -Path $zip -DestinationPath $tempRoot -Force
 
     $installer = Get-ChildItem $tempRoot -Recurse -File -Filter "*.exe" |
@@ -30,7 +32,7 @@ if ($existing -and -not $ForceReinstall) {
         Select-Object -First 1
 
     if (-not $installer) {
-        throw "RetroBar installer executable was not found in the official release archive."
+        throw "RetroBar installer executable was not found in the verified official release archive."
     }
 
     Write-Host "Running official RetroBar installer..."
@@ -50,4 +52,7 @@ if (-not $retroBar) {
 }
 
 Write-Host "RetroBar executable: $retroBar"
-& (Join-Path $PSScriptRoot "configure-retrobar.ps1") -NoLaunch:$NoLaunch
+
+if (-not $NoLaunch) {
+    & (Join-Path $PSScriptRoot "configure-retrobar.ps1")
+}
