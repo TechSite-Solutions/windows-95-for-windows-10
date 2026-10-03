@@ -31,6 +31,18 @@
 - [ ] native multi-monitor verification
 - [ ] native tray/clock soak
 
+## M2.2 — Clock and calendar
+
+- [x] suppress modern RetroBar single-click calendar/action center
+- [x] project-owned Win95 Clock Companion
+- [x] Authentic mode: hover date tooltip
+- [x] Enhanced mode: hover Windows 95-style month calendar
+- [x] top/bottom/left/right taskbar positioning logic
+- [x] startup integration and uninstall
+- [ ] native Windows 10 hit-region tuning
+- [ ] multi-monitor/DPI acceptance
+- [ ] replace RetroBar hard-coded double-click timedate.cpl via maintained patch/fork
+
 ## M3 — Start menu
 
 - [x] pin verified Open-Shell release
