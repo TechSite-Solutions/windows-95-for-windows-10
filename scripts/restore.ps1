@@ -16,6 +16,10 @@ if (-not (Test-Path $metaPath)) {
 }
 
 $meta = Get-Content $metaPath -Raw | ConvertFrom-Json
+$schema = 1
+if ($meta.PSObject.Properties.Name -contains "SchemaVersion") {
+    $schema = [int]$meta.SchemaVersion
+}
 
 Write-Section "Restoring pre-theme state"
 Stop-ProcessIfRunning -Name "RetroBar"
@@ -39,64 +43,84 @@ Import-RegIfPresent "desktop.reg"
 Import-RegIfPresent "cursors.reg"
 Import-RegIfPresent "app-events.reg"
 
-if ($meta.Exports.OpenShellStartMenu) {
-    Import-RegIfPresent "openshell-startmenu.reg"
-} else {
-    Remove-Item "HKCU:\Software\OpenShell\StartMenu" -Recurse -Force -ErrorAction SilentlyContinue
-}
-
-if ($meta.Exports.HideDesktopNew) {
-    Import-RegIfPresent "desktop-icons-new.reg"
-} else {
-    Remove-Item "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Recurse -Force -ErrorAction SilentlyContinue
-}
-
-if ($meta.Exports.HideDesktopClassic) {
-    Import-RegIfPresent "desktop-icons-classic.reg"
-} else {
-    Remove-Item "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Recurse -Force -ErrorAction SilentlyContinue
-}
-
-foreach ($property in $meta.DesktopLabelExports.PSObject.Properties) {
-    $guid = $property.Name
-    $existed = [bool]$property.Value
-    $safe = $guid.Trim("{}")
-
-    if ($existed) {
-        Import-RegIfPresent ("desktop-label-" + $safe + ".reg")
+if ($schema -ge 2) {
+    if ($meta.Exports.OpenShellStartMenu) {
+        Import-RegIfPresent "openshell-startmenu.reg"
     } else {
-        Remove-Item "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\$guid" -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item "HKCU:\Software\OpenShell\StartMenu" -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    if ($meta.Exports.HideDesktopNew) {
+        Import-RegIfPresent "desktop-icons-new.reg"
+    } else {
+        Remove-Item "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    if ($meta.Exports.HideDesktopClassic) {
+        Import-RegIfPresent "desktop-icons-classic.reg"
+    } else {
+        Remove-Item "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    foreach ($property in $meta.DesktopLabelExports.PSObject.Properties) {
+        $guid = $property.Name
+        $existed = [bool]$property.Value
+        $safe = $guid.Trim("{}")
+
+        if ($existed) {
+            Import-RegIfPresent ("desktop-label-" + $safe + ".reg")
+        } else {
+            Remove-Item "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\$guid" -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+if ($schema -ge 3 -and ($meta.PSObject.Properties.Name -contains "IconOverrideExports")) {
+    foreach ($property in $meta.IconOverrideExports.PSObject.Properties) {
+        $guid = $property.Name
+        $existed = [bool]$property.Value
+        $safe = $guid.Trim("{}")
+
+        if ($existed) {
+            Import-RegIfPresent ("desktop-icon-override-" + $safe + ".reg")
+        } else {
+            Remove-Item "HKCU:\Software\Classes\CLSID\$guid" -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 
 $retroBarSettings = Join-Path $env:LOCALAPPDATA "RetroBar\settings.json"
-if ($meta.RetroBarSettingsExisted) {
-    $savedSettings = Join-Path $resolved "retrobar-settings.json"
-    if (Test-Path $savedSettings) {
-        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $retroBarSettings) | Out-Null
-        Copy-Item $savedSettings $retroBarSettings -Force
-        Write-Host "Restored RetroBar settings."
+if ($meta.PSObject.Properties.Name -contains "RetroBarSettingsExisted") {
+    if ($meta.RetroBarSettingsExisted) {
+        $savedSettings = Join-Path $resolved "retrobar-settings.json"
+        if (Test-Path $savedSettings) {
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $retroBarSettings) | Out-Null
+            Copy-Item $savedSettings $retroBarSettings -Force
+            Write-Host "Restored RetroBar settings."
+        }
+    } else {
+        Remove-Item $retroBarSettings -Force -ErrorAction SilentlyContinue
     }
-} else {
-    Remove-Item $retroBarSettings -Force -ErrorAction SilentlyContinue
 }
 
 $runKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-if ($meta.RetroBarRun.Exists) {
-    Set-RegistryValue -Path $runKey -Name "RetroBar" -Value ([string]$meta.RetroBarRun.Value) -Type String
-} else {
-    Remove-ItemProperty -Path $runKey -Name "RetroBar" -ErrorAction SilentlyContinue
+if ($meta.PSObject.Properties.Name -contains "RetroBarRun") {
+    if ($meta.RetroBarRun.Exists) {
+        Set-RegistryValue -Path $runKey -Name "RetroBar" -Value ([string]$meta.RetroBarRun.Value) -Type String
+    } else {
+        Remove-ItemProperty -Path $runKey -Name "RetroBar" -ErrorAction SilentlyContinue
+    }
 }
 
 Write-Host "Registry and local settings restored."
 
 if (-not $NoLaunch) {
-    if ($meta.RetroBarInstalled) {
+    if (($meta.PSObject.Properties.Name -contains "RetroBarInstalled") -and $meta.RetroBarInstalled) {
         $retroBar = Get-RetroBarExe
         if ($retroBar) { Start-Process $retroBar }
     }
 
-    if ($meta.OpenShellInstalled) {
+    if (($meta.PSObject.Properties.Name -contains "OpenShellInstalled") -and $meta.OpenShellInstalled) {
         $openShell = Get-OpenShellExe
         if ($openShell) { Start-Process $openShell }
     }
