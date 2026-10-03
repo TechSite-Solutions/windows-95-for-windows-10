@@ -34,6 +34,12 @@ Test-ExpectedRegistryValue -Path "HKCU:\Control Panel\Colors" -Name "Background"
 Test-ExpectedRegistryValue -Path "HKCU:\Control Panel\Colors" -Name "ButtonFace" -Expected "192 192 192"
 Test-ExpectedRegistryValue -Path "HKCU:\Control Panel\Colors" -Name "ActiveTitle" -Expected "0 0 128"
 
+Test-ExpectedRegistryValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Expected 1
+Test-ExpectedRegistryValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Expected 1
+Test-ExpectedRegistryValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "EnableTransparency" -Expected 0
+Test-ExpectedRegistryValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "AlwaysShowMenus" -Expected 1
+Test-ExpectedRegistryValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Expected 1
+
 $retroBar = Get-RetroBarExe
 if (-not $retroBar) {
     $warnings.Add("RetroBar is not installed.")
@@ -58,10 +64,22 @@ if (-not $openShell) {
     $warnings.Add("Open-Shell is not installed.")
 } else {
     $key = "HKCU:\Software\OpenShell\StartMenu\Settings"
-    Test-ExpectedRegistryValue -Path $key -Name "MenuStyle" -Expected "Classic1"
-    Test-ExpectedRegistryValue -Path $key -Name "WinKey" -Expected "ClassicMenu"
+    Test-ExpectedRegistryValue -Path $key -Name "MenuStyle" -Expected 0
+    Test-ExpectedRegistryValue -Path $key -Name "WinKey" -Expected 1
+    Test-ExpectedRegistryValue -Path $key -Name "SearchBox" -Expected 0
     Test-ExpectedRegistryValue -Path $key -Name "AlignToWorkArea" -Expected 1
     Test-ExpectedRegistryValue -Path $key -Name "EnableStartButton" -Expected 0
+
+    $classicExplorer = Get-ClassicExplorerSettingsExe
+    if (-not $classicExplorer) {
+        $failures.Add("Open-Shell Classic Explorer component is not installed.")
+    } else {
+        $classicKey = "HKCU:\Software\OpenShell\ClassicExplorer\Settings"
+        Test-ExpectedRegistryValue -Path $classicKey -Name "TreeStyle" -Expected 0
+        Test-ExpectedRegistryValue -Path $classicKey -Name "DisableBreadcrumbs" -Expected 1
+        Test-ExpectedRegistryValue -Path $classicKey -Name "HideSearch" -Expected 1
+        Test-ExpectedRegistryValue -Path $classicKey -Name "ShowStatusBar" -Expected 1
+    }
 }
 
 if (-not $Quiet) {
