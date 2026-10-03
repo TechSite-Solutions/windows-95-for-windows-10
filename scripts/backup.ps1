@@ -39,6 +39,12 @@ $exports.Desktop = Export-RegistryKeyIfPresent "HKCU:\Control Panel\Desktop" "HK
 $exports.Cursors = Export-RegistryKeyIfPresent "HKCU:\Control Panel\Cursors" "HKCU\Control Panel\Cursors" "cursors.reg"
 $exports.AppEvents = Export-RegistryKeyIfPresent "HKCU:\AppEvents\Schemes" "HKCU\AppEvents\Schemes" "app-events.reg"
 $exports.OpenShellStartMenu = Export-RegistryKeyIfPresent "HKCU:\Software\OpenShell\StartMenu" "HKCU\Software\OpenShell\StartMenu" "openshell-startmenu.reg"
+$exports.OpenShellClassicExplorer = Export-RegistryKeyIfPresent "HKCU:\Software\OpenShell\ClassicExplorer" "HKCU\Software\OpenShell\ClassicExplorer" "openshell-classic-explorer.reg"
+$exports.ThemePersonalize = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" "theme-personalize.reg"
+$exports.Dwm = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\DWM" "HKCU\Software\Microsoft\Windows\DWM" "dwm.reg"
+$exports.ExplorerAdvanced = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "explorer-advanced.reg"
+$exports.ExplorerRibbon = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Ribbon" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Ribbon" "explorer-ribbon.reg"
+$exports.ControlPanelView = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" "control-panel-view.reg"
 $exports.HideDesktopNew = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" "desktop-icons-new.reg"
 $exports.HideDesktopClassic = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" "desktop-icons-classic.reg"
 
@@ -73,7 +79,7 @@ $runSnapshot = Get-RegistryValueSnapshot -Path "HKCU:\Software\Microsoft\Windows
 
 $os = Get-WindowsInfo
 $meta = [ordered]@{
-    SchemaVersion = 3
+    SchemaVersion = 4
     CreatedAt = (Get-Date).ToString("o")
     ComputerName = $env:COMPUTERNAME
     UserName = $env:USERNAME
