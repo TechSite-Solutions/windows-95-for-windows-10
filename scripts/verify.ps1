@@ -51,6 +51,12 @@ if (-not $retroBar) {
             if ($settings.Theme -ne "Windows 95-98") {
                 $failures.Add("RetroBar Theme is '$($settings.Theme)', expected 'Windows 95-98'.")
             }
+            if (-not $settings.ShowInputLanguage) {
+                $failures.Add("RetroBar ShowInputLanguage is disabled.")
+            }
+            if ("$($settings.ClockClickAction)" -ne "0") {
+                $failures.Add("RetroBar ClockClickAction is '$($settings.ClockClickAction)', expected 0 (DoNothing).")
+            }
         } catch {
             $failures.Add("RetroBar settings.json could not be parsed.")
         }
@@ -80,6 +86,30 @@ if (-not $openShell) {
         Test-ExpectedRegistryValue -Path $classicKey -Name "HideSearch" -Expected 1
         Test-ExpectedRegistryValue -Path $classicKey -Name "ShowStatusBar" -Expected 1
     }
+}
+
+$stateFile = Join-Path (Get-ProjectRoot) "state\last-install.json"
+$expectClockCompanion = $false
+if (Test-Path $stateFile) {
+    try {
+        $state = Get-Content $stateFile -Raw | ConvertFrom-Json
+        if ($state.PSObject.Properties.Name -contains "ClockCompanionInstalledByProject") {
+            $expectClockCompanion = [bool]$state.ClockCompanionInstalledByProject
+        }
+    } catch {}
+}
+
+$clockDir = Join-Path $env:LOCALAPPDATA "Windows95ForWindows10\Clock"
+$clockScript = Join-Path $clockDir "Win95ClockCompanion.ps1"
+$clockConfig = Join-Path $clockDir "clock-config.json"
+$clockRun = Get-RegistryValueSnapshot -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Win95ClockCompanion"
+
+if ($expectClockCompanion) {
+    if (-not (Test-Path $clockScript)) { $failures.Add("Win95 Clock Companion script is missing.") }
+    if (-not (Test-Path $clockConfig)) { $failures.Add("Win95 Clock Companion config is missing.") }
+    if (-not $clockRun.Exists) { $failures.Add("Win95 Clock Companion startup value is missing.") }
+} elseif (-not (Test-Path $clockScript)) {
+    $warnings.Add("Win95 Clock Companion is not installed.")
 }
 
 if (-not $Quiet) {
