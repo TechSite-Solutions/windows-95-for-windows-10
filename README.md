@@ -132,6 +132,7 @@ status.ps1 gives a readable overview. verify.ps1 checks the expected theme confi
 - docs/TROUBLESHOOTING.md — troubleshooting
 - docs/ARCHITECTURE.md — architecture
 - docs/DESIGN-SPEC.md — Windows 95 visual specification
+- docs/FULL-CHROME.md — optional WindowBlinds/SkinStudio frame layer
 - docs/DEPENDENCIES.md — pinned external components
 - docs/ASSET-IMPORT.md — local user-owned assets
 - docs/ASSETS.md — public asset policy
