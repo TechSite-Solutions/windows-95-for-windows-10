@@ -40,6 +40,11 @@ Write-Host "Windows 95 for Windows 10 - rollback"
 Write-Host "===================================="
 Write-Host "Backup: $BackupPath"
 
+$clockUninstall = Join-Path $PSScriptRoot "uninstall-clock-companion.ps1"
+if (Test-Path $clockUninstall) {
+    & $clockUninstall
+}
+
 & (Join-Path $PSScriptRoot "restore.ps1") -BackupPath $BackupPath -NoLaunch
 
 function Invoke-UninstallEntry {
