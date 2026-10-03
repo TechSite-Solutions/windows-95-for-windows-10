@@ -1,6 +1,6 @@
 param(
     [switch]$ForceReinstall,
-    [switch]$NoLaunch
+    [switch]$NoConfigure
 )
 
 Set-StrictMode -Version Latest
@@ -14,15 +14,17 @@ $existing = Get-OpenShellExe
 if ($existing -and -not $ForceReinstall) {
     Write-Host "Open-Shell already installed: $existing"
 } else {
-    $asset = Get-LatestGitHubAsset -Repository "Open-Shell/Open-Shell-Menu" -AssetPattern "^OpenShellSetup_.*\.exe$"
-    Write-Host "Stable release: $($asset.Tag)"
+    $manifest = Get-ComponentManifest
+    $component = $manifest.openshell
 
+    Write-Host "Pinned release: $($component.version)"
     $tempRoot = Join-Path $env:TEMP "Win95ForWin10-OpenShell"
     Remove-Item $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
 
-    $installer = Join-Path $tempRoot $asset.Name
-    Invoke-FileDownload -Uri $asset.DownloadUrl -Destination $installer
+    $installer = Join-Path $tempRoot ([string]$component.asset)
+    Invoke-FileDownload -Uri ([string]$component.url) -Destination $installer
+    Assert-FileSha256 -Path $installer -Expected ([string]$component.sha256)
 
     Write-Host "Installing Open-Shell Start Menu. Windows may show a UAC prompt."
     $args = '/qn ADDLOCAL=OpenShell,StartMenu'
@@ -41,4 +43,7 @@ if (-not $openShell) {
 }
 
 Write-Host "Open-Shell executable: $openShell"
-& (Join-Path $PSScriptRoot "configure-openshell.ps1") -NoLaunch:$NoLaunch
+
+if (-not $NoConfigure) {
+    & (Join-Path $PSScriptRoot "configure-openshell.ps1")
+}
