@@ -10,9 +10,13 @@ $ErrorActionPreference = "Stop"
 Assert-Windows10
 Write-Section "Open-Shell"
 
-$existing = Get-OpenShellExe
-if ($existing -and -not $ForceReinstall) {
-    Write-Host "Open-Shell already installed: $existing"
+$existingMenu = Get-OpenShellExe
+$existingExplorer = Get-ClassicExplorerSettingsExe
+$needsInstall = $ForceReinstall -or -not $existingMenu -or -not $existingExplorer
+
+if (-not $needsInstall) {
+    Write-Host "Open-Shell Start Menu already installed: $existingMenu"
+    Write-Host "Classic Explorer already installed: $existingExplorer"
 } else {
     $manifest = Get-ComponentManifest
     $component = $manifest.openshell
@@ -26,8 +30,8 @@ if ($existing -and -not $ForceReinstall) {
     Invoke-FileDownload -Uri ([string]$component.url) -Destination $installer
     Assert-FileSha256 -Path $installer -Expected ([string]$component.sha256)
 
-    Write-Host "Installing Open-Shell Start Menu. Windows may show a UAC prompt."
-    $args = '/qn ADDLOCAL=OpenShell,StartMenu'
+    Write-Host "Installing Open-Shell Start Menu + Classic Explorer. Windows may show a UAC prompt."
+    $args = '/qn ADDLOCAL=OpenShell,StartMenu,ClassicExplorer'
     $proc = Start-Process -FilePath $installer -ArgumentList $args -Verb RunAs -Wait -PassThru
 
     if ($proc.ExitCode -notin @(0,3010,1641)) {
@@ -42,8 +46,15 @@ if (-not $openShell) {
     throw "Open-Shell installation finished but StartMenu.exe could not be located."
 }
 
+$classicExplorer = Get-ClassicExplorerSettingsExe
+if (-not $classicExplorer) {
+    throw "Open-Shell installation finished but ClassicExplorerSettings.exe could not be located."
+}
+
 Write-Host "Open-Shell executable: $openShell"
+Write-Host "Classic Explorer settings: $classicExplorer"
 
 if (-not $NoConfigure) {
-    & (Join-Path $PSScriptRoot "configure-openshell.ps1")
+    & (Join-Path $PSScriptRoot "configure-openshell.ps1") -NoLaunch
+    & (Join-Path $PSScriptRoot "configure-classic-explorer.ps1") -NoRestartExplorer
 }
