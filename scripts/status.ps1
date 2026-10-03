@@ -12,6 +12,33 @@ $manifest = Get-ComponentManifest
 Write-Host ("Pinned RetroBar:   {0}" -f $manifest.retrobar.version)
 Write-Host ("Pinned Open-Shell: {0}" -f $manifest.openshell.version)
 
+Write-Host ""
+Write-Host "Language switcher:"
+if (Get-Command Get-WinLanguageBarOption -ErrorAction SilentlyContinue) {
+    try {
+        $languageBar = Get-WinLanguageBarOption
+        Write-Host ("  Windows language bar mode: legacy={0}, legacy switching={1}" -f $languageBar.IsLegacyLanguageBar,$languageBar.IsLegacySwitchingMode)
+    } catch {
+        Write-Warning "Could not read Windows language bar options."
+    }
+}
+$langBarKey = "HKCU:\Software\Microsoft\CTF\LangBar"
+if (Test-Path $langBarKey) {
+    try {
+        $showStatus = Get-ItemPropertyValue -Path $langBarKey -Name "ShowStatus" -ErrorAction Stop
+        Write-Host ("  Legacy language bar ShowStatus: {0}" -f $showStatus)
+    } catch {}
+}
+if (Get-Command Get-WinUserLanguageList -ErrorAction SilentlyContinue) {
+    try {
+        $tips = @()
+        foreach ($language in Get-WinUserLanguageList) {
+            foreach ($tip in $language.InputMethodTips) { $tips += $tip }
+        }
+        Write-Host ("  Installed input methods: {0}" -f $tips.Count)
+    } catch {}
+}
+
 $clockDir = Join-Path $env:LOCALAPPDATA "Windows95ForWindows10\Clock"
 $clockScript = Join-Path $clockDir "Win95ClockCompanion.ps1"
 $clockConfig = Join-Path $clockDir "clock-config.json"
