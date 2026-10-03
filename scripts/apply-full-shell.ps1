@@ -18,7 +18,7 @@ Set-RegistryValue -Path $personalize -Name "EnableTransparency"   -Value 0 -Type
 # Prefer the classic navy accent on title bars/borders where Windows 10 still honors it.
 $dwm = "HKCU:\Software\Microsoft\Windows\DWM"
 Set-RegistryValue -Path $dwm -Name "ColorPrevalence" -Value 1 -Type DWord
-Set-RegistryValue -Path $dwm -Name "AccentColor" -Value ([uint32]0xFF800000) -Type DWord
+& reg.exe add "HKCU\Software\Microsoft\Windows\DWM" /v AccentColor /t REG_DWORD /d 0xFF800000 /f | Out-Null
 
 # Explorer: open at This PC, expose a classic menu/status layout and keep the ribbon collapsed.
 $advanced = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
