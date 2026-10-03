@@ -5,7 +5,7 @@ Target: Windows 10 64-bit.
 ## Fast path
 
 1. Clone the repository.
-2. Double-click Install.cmd.
+2. Double-click Install.cmd, or Install-Interactive.cmd for a guided component menu.
 3. Approve UAC when Windows asks for elevation during restore-point/Open-Shell setup.
 4. Sign out and sign back in after the installer finishes.
 
@@ -15,6 +15,10 @@ Command-line equivalent:
     cd windows-95-for-windows-10
     Set-ExecutionPolicy -Scope Process Bypass
     .\scripts\install.ps1
+
+Preview the plan without changing Windows:
+
+    .\scripts\install.ps1 -DryRun
 
 ## What the installer does
 
@@ -174,13 +178,21 @@ Configure without launching RetroBar/Open-Shell immediately:
 
     .\scripts\install.ps1 -NoLaunch
 
+Preview the selected plan only:
+
+    .\scripts\install.ps1 -DryRun
+
 ## User-owned cursors, sounds and icons
 
 Prepare a folder as documented in ASSET-IMPORT.md, then run:
 
     .\scripts\import-user-assets.ps1 -SourceDirectory "C:\MyWin95Assets" -ApplyCursors -ApplySounds -ApplyIcons
 
-These files are copied only to the local PC. They are never committed by the project.\n\nTo apply all supplied local assets as part of the main installation:\n\n    .\\scripts\\install.ps1 -ImportAssetsFrom "C:\\MyWin95Assets"
+These files are copied only to the local PC. They are never committed by the project.
+
+To apply all supplied local assets as part of the main installation:
+
+    .\scripts\install.ps1 -ImportAssetsFrom "C:\MyWin95Assets"
 
 ## Verify
 
