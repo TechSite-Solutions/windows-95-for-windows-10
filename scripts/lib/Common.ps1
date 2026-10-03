@@ -36,6 +36,15 @@ function Assert-Windows10 {
     }
 }
 
+function Get-ComponentManifest {
+    $root = Get-ProjectRoot
+    $path = Join-Path $root "config\components.json"
+    if (-not (Test-Path $path)) {
+        throw "Missing component manifest: $path"
+    }
+    return (Get-Content $path -Raw | ConvertFrom-Json)
+}
+
 function Get-LatestGitHubAsset {
     param(
         [Parameter(Mandatory=$true)][string]$Repository,
@@ -57,6 +66,11 @@ function Get-LatestGitHubAsset {
         throw "No release asset matching '$AssetPattern' was found for $Repository."
     }
 
+    $digest = $null
+    if ($asset.PSObject.Properties.Name -contains "digest") {
+        $digest = [string]$asset.digest
+    }
+
     [pscustomobject]@{
         Repository  = $Repository
         Tag          = [string]$release.tag_name
@@ -64,6 +78,7 @@ function Get-LatestGitHubAsset {
         DownloadUrl  = [string]$asset.browser_download_url
         Size         = [long]$asset.size
         PublishedAt  = [string]$release.published_at
+        Digest       = $digest
     }
 }
 
@@ -85,6 +100,22 @@ function Invoke-FileDownload {
     }
 }
 
+function Assert-FileSha256 {
+    param(
+        [Parameter(Mandatory=$true)][string]$Path,
+        [Parameter(Mandatory=$true)][string]$Expected
+    )
+
+    $actual = (Get-FileHash -Path $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    $expectedNormalized = $Expected.ToLowerInvariant().Replace("sha256:","")
+
+    if ($actual -ne $expectedNormalized) {
+        throw "SHA-256 mismatch for '$Path'. Expected $expectedNormalized, got $actual."
+    }
+
+    Write-Host "SHA-256 verified: $actual"
+}
+
 function Get-UninstallEntries {
     $paths = @(
         "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
@@ -97,11 +128,12 @@ function Get-UninstallEntries {
 }
 
 function Get-RetroBarExe {
+    $programFilesX86 = [Environment]::GetEnvironmentVariable("ProgramFiles(x86)")
     $candidates = @(
-        "$env:ProgramFiles\RetroBar\RetroBar.exe",
-        "${env:ProgramFiles(x86)}\RetroBar\RetroBar.exe",
-        "$env:LOCALAPPDATA\Programs\RetroBar\RetroBar.exe"
-    ) | Where-Object { $_ -and $_ -notmatch "^\\RetroBar" }
+        (Join-Path $env:ProgramFiles "RetroBar\RetroBar.exe"),
+        $(if ($programFilesX86) { Join-Path $programFilesX86 "RetroBar\RetroBar.exe" }),
+        (Join-Path $env:LOCALAPPDATA "Programs\RetroBar\RetroBar.exe")
+    ) | Where-Object { $_ }
 
     foreach ($path in $candidates) {
         if (Test-Path $path) { return $path }
@@ -117,10 +149,11 @@ function Get-RetroBarExe {
 }
 
 function Get-OpenShellExe {
+    $programFilesX86 = [Environment]::GetEnvironmentVariable("ProgramFiles(x86)")
     $candidates = @(
-        "$env:ProgramFiles\Open-Shell\StartMenu.exe",
-        "${env:ProgramFiles(x86)}\Open-Shell\StartMenu.exe"
-    ) | Where-Object { $_ -and $_ -notmatch "^\\Open-Shell" }
+        (Join-Path $env:ProgramFiles "Open-Shell\StartMenu.exe"),
+        $(if ($programFilesX86) { Join-Path $programFilesX86 "Open-Shell\StartMenu.exe" })
+    ) | Where-Object { $_ }
 
     foreach ($path in $candidates) {
         if (Test-Path $path) { return $path }
@@ -151,9 +184,26 @@ function Set-RegistryValue {
     New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $Type -Force | Out-Null
 }
 
+function Get-RegistryValueSnapshot {
+    param(
+        [Parameter(Mandatory=$true)][string]$Path,
+        [Parameter(Mandatory=$true)][string]$Name
+    )
+
+    if (-not (Test-Path $Path)) {
+        return [pscustomobject]@{ Exists = $false; Value = $null }
+    }
+
+    try {
+        $value = Get-ItemPropertyValue -Path $Path -Name $Name -ErrorAction Stop
+        return [pscustomobject]@{ Exists = $true; Value = $value }
+    } catch {
+        return [pscustomobject]@{ Exists = $false; Value = $null }
+    }
+}
+
 function Stop-ProcessIfRunning {
     param([Parameter(Mandatory=$true)][string]$Name)
-
     Get-Process -Name $Name -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 }
 
