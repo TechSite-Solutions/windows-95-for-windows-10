@@ -16,6 +16,8 @@ $retro = Get-RetroBarExe
 $open = Get-OpenShellExe
 $retroSettings = Join-Path $env:LOCALAPPDATA "RetroBar\settings.json"
 $openKey = "HKCU:\Software\OpenShell\StartMenu\Settings"
+$classicExplorerExe = Get-ClassicExplorerSettingsExe
+$classicExplorerKey = "HKCU:\Software\OpenShell\ClassicExplorer\Settings"
 
 Write-Host ""
 Write-Host ("RetroBar installed: {0}" -f [bool]$retro)
@@ -37,6 +39,8 @@ if (Test-Path $retroSettings) {
 Write-Host ""
 Write-Host ("Open-Shell installed: {0}" -f [bool]$open)
 if ($open) { Write-Host ("  Path: {0}" -f $open) }
+Write-Host ("Classic Explorer installed: {0}" -f [bool]$classicExplorerExe)
+if ($classicExplorerExe) { Write-Host ("  Path: {0}" -f $classicExplorerExe) }
 
 if (Test-Path $openKey) {
     $props = Get-ItemProperty $openKey
@@ -46,6 +50,23 @@ if (Test-Path $openKey) {
     Write-Host ("  Open-Shell Start button enabled: {0}" -f $props.EnableStartButton)
 } else {
     Write-Host "  Config: missing"
+}
+
+
+if (Test-Path $classicExplorerKey) {
+    $ce = Get-ItemProperty $classicExplorerKey
+    Write-Host ("  Classic Explorer TreeStyle: {0}" -f $ce.TreeStyle)
+    Write-Host ("  Classic Explorer breadcrumbs disabled: {0}" -f $ce.DisableBreadcrumbs)
+    Write-Host ("  Classic Explorer status bar: {0}" -f $ce.ShowStatusBar)
+}
+
+$personalize = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+if (Test-Path $personalize) {
+    $theme = Get-ItemProperty $personalize
+    Write-Host ""
+    Write-Host ("Windows app light mode: {0}" -f $theme.AppsUseLightTheme)
+    Write-Host ("Windows system light mode: {0}" -f $theme.SystemUsesLightTheme)
+    Write-Host ("Transparency enabled: {0}" -f $theme.EnableTransparency)
 }
 
 $colors = Get-ItemProperty "HKCU:\Control Panel\Colors"
