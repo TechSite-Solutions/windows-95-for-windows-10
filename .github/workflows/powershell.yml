@@ -50,3 +50,8 @@ jobs:
       - name: Regression test uninstall registry entries
         shell: pwsh
         run: .\tests\test-uninstall-entry-properties.ps1
+
+
+      - name: Validate Win95 clock companion
+        shell: pwsh
+        run: .\tests\test-clock-companion.ps1
