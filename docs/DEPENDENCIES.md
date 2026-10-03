@@ -1,6 +1,8 @@
 # Dependencies
 
-The project keeps third-party executables outside this repository and retrieves them from official release sources.
+Third-party executables are not committed to this repository.
+
+The standard installer uses pinned official release assets defined in config/components.json and verifies SHA-256 before execution.
 
 ## RetroBar
 
@@ -8,16 +10,20 @@ Official repository:
 
 https://github.com/dremin/RetroBar
 
+Pinned release:
+
+- Version: 1.22.122
+- Tag: v1.22.122
+- Asset: RetroBar.Installer.zip
+- SHA-256: 6499a3b4411166c44a921546237033697a05cab61d69482a6339df1e9dd5849f
+
 Role:
 
-- classic taskbar;
+- Windows 95-98 taskbar;
 - notification area;
+- clock;
 - Quick Launch;
-- Windows 95-98 built-in theme.
-
-The installer queries the GitHub **latest stable release** endpoint at runtime and downloads the official `RetroBar.Installer.zip` asset.
-
-The version is intentionally not hard-coded so normal installations can receive a newer stable release. Native validation should record the exact version used.
+- visible Start button.
 
 ## Open-Shell
 
@@ -25,34 +31,39 @@ Official repository:
 
 https://github.com/Open-Shell/Open-Shell-Menu
 
+Pinned release:
+
+- Version: 4.4.198
+- Tag: v4.4.198
+- Asset: OpenShellSetup_4_4_198.exe
+- SHA-256: a4d2d4459de55b5e962ba2a14f7bb794170511649138173dfa72949837b48c3f
+
 Role:
 
 - classic Start menu;
-- Windows key behavior;
+- Windows-key behavior;
 - built-in Classic Skin.
 
-The installer queries the GitHub **latest stable release** endpoint and downloads the official `OpenShellSetup_*.exe` asset.
-
-Only the Open-Shell core and Start Menu feature are requested by the automated installer.
+Only the core/OpenShell and StartMenu MSI features are requested by the automated installer.
 
 ## Optional WindowBlinds
 
-Official product page:
+WindowBlinds is not downloaded or installed automatically.
 
-https://www.stardock.com/products/windowblinds/
+It can provide deeper title-bar/window-frame skinning than supported Windows 10 user-level theme settings, but it remains an optional manual layer.
 
-Role:
+## Updating a dependency
 
-- optional deeper title-bar/window-frame skinning.
+Do not merely change the URL.
 
-It is not downloaded or installed automatically by this project.
+For each update:
 
-## Trust boundary
+1. verify the release is from the official upstream repository;
+2. record the exact release asset;
+3. record its SHA-256 digest from trusted release metadata or a separately verified download;
+4. update config/components.json;
+5. run CI;
+6. perform native Windows 10 installation/rollback validation;
+7. update CHANGELOG.md.
 
-The automated installer trusts:
-
-1. GitHub HTTPS;
-2. the official upstream repository release metadata;
-3. the official release asset supplied by that repository.
-
-Future hardening should pin/verify upstream digests when release metadata exposes a usable SHA-256 digest for all required assets.
+Hash mismatch is a hard failure and must not be bypassed.
