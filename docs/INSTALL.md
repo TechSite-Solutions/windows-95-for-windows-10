@@ -240,3 +240,32 @@ To return to the enhanced hover calendar:
 ```
 
 See [CLOCK-CALENDAR.md](CLOCK-CALENDAR.md).
+
+
+## Windows 95 language switcher
+
+The standard installation keeps **RetroBar's classic input-language switcher** visible and suppresses the native Windows 10 input indicator so there is only one language control on the taskbar.
+
+The project does this by:
+
+- keeping `ShowInputLanguage = true` in RetroBar;
+- enabling Windows' legacy language-bar mode;
+- hiding the legacy desktop bar itself;
+- leaving keyboard layouts/input methods unchanged;
+- leaving normal shortcuts such as Win+Space available.
+
+The result should be a small classic language indicator inside RetroBar instead of the modern Windows 10 `ENG/UKR/CES` taskbar indicator.
+
+Apply or repair it separately:
+
+```powershell
+.\scripts\configure-language-indicator.ps1
+```
+
+If you intentionally want to keep the Windows 10 indicator too:
+
+```powershell
+.\scripts\configure-language-indicator.ps1 -KeepWindowsIndicator
+```
+
+A sign-out/sign-in may be required before the native Windows indicator disappears completely.
