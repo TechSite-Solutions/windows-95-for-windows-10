@@ -6,6 +6,7 @@ param(
     [switch]$SkipRestorePoint,
     [switch]$NoLaunch,
     [switch]$AllowUnsupportedWindows,
+    [switch]$DryRun,
     [string]$ImportAssetsFrom
 )
 
@@ -18,6 +19,27 @@ Assert-Windows10 -AllowUnsupportedWindows:$AllowUnsupportedWindows
 $root = Get-ProjectRoot
 $stateDir = Join-Path $root "state"
 $stateFile = Join-Path $stateDir "last-install.json"
+
+if ($DryRun) {
+    $manifest = Get-ComponentManifest
+    Write-Host ""
+    Write-Host "Windows 95 for Windows 10 - dry run"
+    Write-Host "=================================="
+    Write-Host "No settings or files will be changed."
+    Write-Host ""
+    Write-Host ("Target OS: {0}" -f (Get-WindowsInfo).Caption)
+    Write-Host ("Base palette: apply")
+    Write-Host ("Classic metrics: {0}" -f (-not $SkipMetrics))
+    Write-Host ("Classic desktop icons/labels: {0}" -f (-not $SkipDesktopIcons))
+    Write-Host ("RetroBar: {0}" -f $(if ($SkipRetroBar) { "skip" } else { "install/configure " + $manifest.retrobar.version }))
+    Write-Host ("Open-Shell: {0}" -f $(if ($SkipOpenShell) { "skip" } else { "install/configure " + $manifest.openshell.version }))
+    Write-Host ("Restore point attempt: {0}" -f (-not $SkipRestorePoint))
+    Write-Host ("Local assets: {0}" -f $(if ($ImportAssetsFrom) { $ImportAssetsFrom } else { "none" }))
+    Write-Host ""
+    Write-Host "Run again without -DryRun to apply."
+    return
+}
+
 New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
 
 Write-Host ""
