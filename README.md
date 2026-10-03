@@ -99,9 +99,9 @@ Because this is a public repository, original Microsoft Windows 95 icons, WAV fi
 
 If you legally own compatible assets, use:
 
-    .\scripts\import-user-assets.ps1 -SourceDirectory "C:\MyWin95Assets" -ApplyCursors -ApplySounds
+    .\scripts\import-user-assets.ps1 -SourceDirectory "C:\MyWin95Assets" -ApplyCursors -ApplySounds -ApplyIcons
 
-See docs/ASSET-IMPORT.md.
+You can also import and apply all supplied local assets during the main install:\n\n    .\\scripts\\install.ps1 -ImportAssetsFrom "C:\\MyWin95Assets"\n\nSee docs/ASSET-IMPORT.md.
 
 ## Verification
 
