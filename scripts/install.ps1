@@ -107,6 +107,7 @@ try {
     if (-not $SkipRetroBar) {
         & (Join-Path $PSScriptRoot "install-retrobar.ps1") -NoLaunch
         & (Join-Path $PSScriptRoot "configure-retrobar.ps1") -NoLaunch
+        & (Join-Path $PSScriptRoot "configure-language-indicator.ps1")
         $state.RetroBarInstalledByProject = (-not $retroBarBefore) -and [bool](Get-RetroBarExe)
     }
 
