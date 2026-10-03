@@ -2,78 +2,119 @@
 
 A safe, reversible project for making **Windows 10 look and feel as close as practical to Windows 95** while keeping the modern Windows 10 system underneath.
 
-> Goal: Windows 10 inside, Windows 95 outside.
+> **Windows 10 inside. Windows 95 outside.**
 
-## Status
+## Current status
 
-**Early development / v0.1 foundation**
+The project now has an automated installation path for the core experience:
 
-The project currently focuses on:
+- Windows 95 base color palette and teal desktop;
+- automatic backup before changes;
+- automatic download/install/configuration of **RetroBar** from its official GitHub release;
+- automatic download/install/configuration of **Open-Shell** from its official GitHub release;
+- RetroBar **Windows 95-98** taskbar profile;
+- Open-Shell **Classic1 + Classic Skin** Start menu profile;
+- status diagnostics;
+- rollback/restore tooling;
+- PowerShell syntax checks in GitHub Actions;
+- optional local-asset layer for user-owned Windows 95 icons, cursors and sounds.
 
-- safe backup and rollback;
-- classic Windows 95 color palette;
-- Windows 95-style desktop configuration;
-- RetroBar integration for the classic taskbar;
-- Open-Shell integration for the classic Start menu;
-- optional WindowBlinds integration for deeper window-frame theming;
-- documentation for installation, removal and troubleshooting.
+The remaining work is primarily **native Windows 10 validation**, clean-room assets for public distribution, and optional deeper window-frame skinning.
 
-## Safety first
+## Safety model
 
-This project intentionally does **not** patch or replace:
+The standard installer deliberately does **not** patch or replace:
 
 - `explorer.exe`
 - `uxtheme.dll`
 - `themeui.dll`
-- other protected Windows system binaries
+- protected Windows DLLs
+- Windows security components
 
-The default path is designed to be reversible.
+Third-party programs are downloaded from their official GitHub release endpoints at install time; their binaries are not stored in this repository.
 
-Before applying anything, read [docs/INSTALL.md](docs/INSTALL.md).
+## Quick install
 
-## Quick start
-
-1. Create a Windows restore point.
-2. Clone the repository.
-3. Open PowerShell.
-4. Run:
+First create a Windows restore point. Then:
 
 ```powershell
+git clone https://github.com/TechSite-Solutions/windows-95-for-windows-10.git
+cd windows-95-for-windows-10
+
 Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\check-system.ps1
-.\scripts\backup.ps1
 .\scripts\install.ps1
+.\scripts\status.ps1
 ```
 
-5. Install/configure RetroBar and Open-Shell using the instructions in [docs/INSTALL.md](docs/INSTALL.md).
-6. Reboot or sign out/sign in if a visual change does not apply immediately.
+The installer creates a timestamped backup automatically.
+
+Open-Shell installation may trigger a Windows UAC prompt.
+
+After installation, **sign out and sign back in** for the most reliable shell refresh.
+
+See [docs/INSTALL.md](docs/INSTALL.md) for the full procedure.
+
+## Installation options
+
+Install only the base theme + Open-Shell:
+
+```powershell
+.\scripts\install.ps1 -SkipRetroBar
+```
+
+Install only the base theme + RetroBar:
+
+```powershell
+.\scripts\install.ps1 -SkipOpenShell
+```
+
+Configure everything without launching the shell replacements immediately:
+
+```powershell
+.\scripts\install.ps1 -NoLaunch
+```
 
 ## Components
 
-| Area | Component | Required |
+| Area | Implementation | State |
 |---|---|---|
-| Desktop colors | Included scripts | Yes |
-| Backup / rollback | Included scripts | Yes |
-| Taskbar | RetroBar | Recommended |
-| Start menu | Open-Shell | Recommended |
-| Window frames | WindowBlinds 11 | Optional |
-| Icons | Project recreation/import layer | Planned |
-| Cursors | Project recreation/import layer | Planned |
-| Sounds | Import/recreation layer | Planned |
+| Desktop palette | project scripts | Automated |
+| Backup / restore | project scripts | Automated |
+| Taskbar | RetroBar | Automated |
+| Start menu | Open-Shell | Automated |
+| Status diagnostics | project scripts | Automated |
+| Local user-owned assets | import layer | In progress |
+| Public clean-room icons | project assets | Planned |
+| Public clean-room cursors | project assets | Planned |
+| Public clean-room sounds | project assets | Planned |
+| Window borders/title bars | optional WindowBlinds layer | Optional / manual |
 
-Official projects:
+Official dependencies:
 
 - RetroBar: https://github.com/dremin/RetroBar
 - Open-Shell: https://github.com/Open-Shell/Open-Shell-Menu
-- WindowBlinds: https://www.stardock.com/products/windowblinds/
+- WindowBlinds (optional): https://www.stardock.com/products/windowblinds/
 
-## Project principles
+## Rollback
 
-1. **Reversible by default** — backup before changing user settings.
-2. **No system-DLL patching in the standard installer.**
-3. **No copyrighted Microsoft Windows 95 binary assets are redistributed.**
-4. **Pixel accuracy where practical** without sacrificing Windows 10 stability.
-5. **Small, auditable PowerShell scripts** instead of opaque installers during early development.
+Find the timestamped backup created under `backups\`, then run:
+
+```powershell
+.\scripts\uninstall.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS"
+```
+
+The project restores the backed-up user registry configuration and RetroBar settings. Third-party programs are intentionally removed through their official uninstallers / Windows Apps & Features.
+
+See [docs/UNINSTALL.md](docs/UNINSTALL.md).
+
+## Personal pixel-accuracy mode
+
+This is a **public repository**, so it does not redistribute original Microsoft Windows 95 icons, sounds, cursors, fonts, DLLs or executable resources.
+
+For personal use, the project supports a local asset folder that is ignored by Git. You may place assets you lawfully own there and apply them locally without publishing them.
+
+See [local-assets/README.md](local-assets/README.md).
 
 ## Documentation
 
@@ -81,22 +122,18 @@ Official projects:
 - [Uninstall / rollback](docs/UNINSTALL.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Windows 95 design specification](docs/DESIGN-SPEC.md)
-- [Assets and copyright policy](docs/ASSETS.md)
+- [Dependencies](docs/DEPENDENCIES.md)
+- [Asset policy](docs/ASSETS.md)
 - [Roadmap](docs/ROADMAP.md)
-
-## Important note about Microsoft assets
-
-Windows 95 artwork, icons, sounds and other original Microsoft resources may be copyrighted. This repository does not include original Microsoft binaries or extracted resources.
-
-Where possible, this project will use clean-room recreation assets, user-provided assets, or import mechanisms.
+- [Security](SECURITY.md)
 
 ## Target
 
-Primary target:
+Primary supported target:
 
 - Windows 10 64-bit
 
-The project may work on other versions, but Windows 10 is the supported target unless stated otherwise.
+Other Windows versions are not considered validated unless explicitly documented.
 
 ## Disclaimer
 
