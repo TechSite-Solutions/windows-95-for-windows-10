@@ -1,41 +1,90 @@
+param(
+    [switch]$PassThru
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "lib\Common.ps1")
 
-$root = Split-Path -Parent $PSScriptRoot
+$root = Get-ProjectRoot
 $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $backupDir = Join-Path $root ("backups\" + $stamp)
 New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
 
-Write-Host "Creating backup in: $backupDir"
+Write-Section "Creating rollback backup"
+Write-Host "Backup directory: $backupDir"
 
-$registryExports = [ordered]@{
-    "colors.reg"     = "HKCU\Control Panel\Colors"
-    "desktop.reg"    = "HKCU\Control Panel\Desktop"
-    "openshell.reg"  = "HKCU\Software\OpenShell"
-    "run.reg"        = "HKCU\Software\Microsoft\Windows\CurrentVersion\Run"
+function Export-RegistryKeyIfPresent {
+    param(
+        [string]$PowerShellPath,
+        [string]$RegPath,
+        [string]$FileName
+    )
+
+    if (-not (Test-Path $PowerShellPath)) {
+        return $false
+    }
+
+    $file = Join-Path $backupDir $FileName
+    & reg.exe export $RegPath $file /y | Out-Null
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $file)) {
+        throw "Failed to export registry key: $RegPath"
+    }
+    return $true
 }
 
-foreach ($item in $registryExports.GetEnumerator()) {
-    $target = Join-Path $backupDir $item.Key
-    & reg.exe export $item.Value $target /y *> $null
+$exports = [ordered]@{}
+$exports.Colors = Export-RegistryKeyIfPresent "HKCU:\Control Panel\Colors" "HKCU\Control Panel\Colors" "colors.reg"
+$exports.Desktop = Export-RegistryKeyIfPresent "HKCU:\Control Panel\Desktop" "HKCU\Control Panel\Desktop" "desktop.reg"
+$exports.Cursors = Export-RegistryKeyIfPresent "HKCU:\Control Panel\Cursors" "HKCU\Control Panel\Cursors" "cursors.reg"
+$exports.AppEvents = Export-RegistryKeyIfPresent "HKCU:\AppEvents\Schemes" "HKCU\AppEvents\Schemes" "app-events.reg"
+$exports.OpenShellStartMenu = Export-RegistryKeyIfPresent "HKCU:\Software\OpenShell\StartMenu" "HKCU\Software\OpenShell\StartMenu" "openshell-startmenu.reg"
+$exports.HideDesktopNew = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" "desktop-icons-new.reg"
+$exports.HideDesktopClassic = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" "desktop-icons-classic.reg"
+
+$desktopGuids = @(
+    "{20D04FE0-3AEA-1069-A2D8-08002B30309D}",
+    "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}",
+    "{59031A47-3F72-44A7-89C5-5595FE6B30EE}",
+    "{5399E694-6CE5-4D6C-8FCE-1D8870FDCBA0}",
+    "{645FF040-5081-101B-9F08-00AA002F954E}"
+)
+
+$labelExports = [ordered]@{}
+foreach ($guid in $desktopGuids) {
+    $psPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\$guid"
+    $safe = $guid.Trim("{}")
+    $labelExports[$guid] = Export-RegistryKeyIfPresent $psPath "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\$guid" ("desktop-label-" + $safe + ".reg")
 }
 
-$retroBarDir = Join-Path $env:LOCALAPPDATA "RetroBar"
-$retroBarSettings = Join-Path $retroBarDir "settings.json"
-if (Test-Path $retroBarSettings) {
+$retroBarSettings = Join-Path $env:LOCALAPPDATA "RetroBar\settings.json"
+$retroBarSettingsExisted = Test-Path $retroBarSettings
+if ($retroBarSettingsExisted) {
     Copy-Item $retroBarSettings (Join-Path $backupDir "retrobar-settings.json") -Force
 }
 
+$runSnapshot = Get-RegistryValueSnapshot -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "RetroBar"
+
+$os = Get-WindowsInfo
 $meta = [ordered]@{
-    CreatedAt    = (Get-Date).ToString("o")
+    SchemaVersion = 2
+    CreatedAt = (Get-Date).ToString("o")
     ComputerName = $env:COMPUTERNAME
-    UserName     = $env:USERNAME
-    OS           = (Get-CimInstance Win32_OperatingSystem).Caption
-    Version      = (Get-CimInstance Win32_OperatingSystem).Version
+    UserName = $env:USERNAME
+    OS = $os
+    Exports = $exports
+    DesktopLabelExports = $labelExports
+    RetroBarSettingsExisted = $retroBarSettingsExisted
+    RetroBarRun = $runSnapshot
+    RetroBarInstalled = [bool](Get-RetroBarExe)
+    OpenShellInstalled = [bool](Get-OpenShellExe)
 }
 
-$meta | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $backupDir "backup.json")
+$meta | ConvertTo-Json -Depth 8 | Set-Content -Encoding UTF8 (Join-Path $backupDir "backup.json")
 
 Write-Host "Backup complete."
-Write-Host "Backup path:"
-Write-Host $backupDir
+if ($PassThru) {
+    Write-Output $backupDir
+} else {
+    Write-Host "Rollback path: $backupDir"
+}
