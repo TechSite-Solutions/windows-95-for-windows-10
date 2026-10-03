@@ -75,6 +75,27 @@ if ($schema -ge 2) {
     }
 }
 
+if ($schema -ge 4) {
+    $fullShellKeys = @(
+        @{ Name = "OpenShellClassicExplorer"; File = "openshell-classic-explorer.reg"; Path = "HKCU:\Software\OpenShell\ClassicExplorer" },
+        @{ Name = "ThemePersonalize"; File = "theme-personalize.reg"; Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" },
+        @{ Name = "Dwm"; File = "dwm.reg"; Path = "HKCU:\Software\Microsoft\Windows\DWM" },
+        @{ Name = "ExplorerAdvanced"; File = "explorer-advanced.reg"; Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" },
+        @{ Name = "ExplorerRibbon"; File = "explorer-ribbon.reg"; Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Ribbon" },
+        @{ Name = "ControlPanelView"; File = "control-panel-view.reg"; Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" }
+    )
+
+    foreach ($item in $fullShellKeys) {
+        $property = $meta.Exports.PSObject.Properties[$item.Name]
+        $existed = $property -and [bool]$property.Value
+        if ($existed) {
+            Import-RegIfPresent $item.File
+        } else {
+            Remove-Item $item.Path -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 if ($schema -ge 3 -and ($meta.PSObject.Properties.Name -contains "IconOverrideExports")) {
     foreach ($property in $meta.IconOverrideExports.PSObject.Properties) {
         $guid = $property.Name
