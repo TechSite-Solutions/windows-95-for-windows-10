@@ -51,10 +51,16 @@ $desktopGuids = @(
 )
 
 $labelExports = [ordered]@{}
+$iconOverrideExports = [ordered]@{}
+
 foreach ($guid in $desktopGuids) {
-    $psPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\$guid"
     $safe = $guid.Trim("{}")
-    $labelExports[$guid] = Export-RegistryKeyIfPresent $psPath "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\$guid" ("desktop-label-" + $safe + ".reg")
+
+    $labelPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\$guid"
+    $labelExports[$guid] = Export-RegistryKeyIfPresent $labelPath "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\$guid" ("desktop-label-" + $safe + ".reg")
+
+    $iconPath = "HKCU:\Software\Classes\CLSID\$guid"
+    $iconOverrideExports[$guid] = Export-RegistryKeyIfPresent $iconPath "HKCU\Software\Classes\CLSID\$guid" ("desktop-icon-override-" + $safe + ".reg")
 }
 
 $retroBarSettings = Join-Path $env:LOCALAPPDATA "RetroBar\settings.json"
@@ -67,13 +73,14 @@ $runSnapshot = Get-RegistryValueSnapshot -Path "HKCU:\Software\Microsoft\Windows
 
 $os = Get-WindowsInfo
 $meta = [ordered]@{
-    SchemaVersion = 2
+    SchemaVersion = 3
     CreatedAt = (Get-Date).ToString("o")
     ComputerName = $env:COMPUTERNAME
     UserName = $env:USERNAME
     OS = $os
     Exports = $exports
     DesktopLabelExports = $labelExports
+    IconOverrideExports = $iconOverrideExports
     RetroBarSettingsExisted = $retroBarSettingsExisted
     RetroBarRun = $runSnapshot
     RetroBarInstalled = [bool](Get-RetroBarExe)
