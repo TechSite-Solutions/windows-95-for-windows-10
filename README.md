@@ -134,6 +134,7 @@ status.ps1 gives a readable overview. verify.ps1 checks the expected theme confi
 - docs/ARCHITECTURE.md — architecture
 - docs/DESIGN-SPEC.md — Windows 95 visual specification
 - docs/FULL-SHELL.md — Windows 95 shell conversion for Explorer/Control Panel/system surfaces
+- docs/CLOCK-CALENDAR.md — Windows 95 clock/date tooltip and enhanced hover calendar
 - docs/FULL-CHROME.md — optional WindowBlinds/SkinStudio frame layer
 - docs/DEPENDENCIES.md — pinned external components
 - docs/ASSET-IMPORT.md — local user-owned assets
