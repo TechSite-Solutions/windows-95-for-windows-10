@@ -29,7 +29,7 @@ $settings = [ordered]@{
     AllowFontSmoothing      = $false
     AllowFontSmoothingMenu  = $false
     UseSoftwareRendering    = $false
-    Edge                    = "Bottom"
+    Edge                    = 3
     RowCount                = 1
     RowLimit                = 5
     TaskbarWidth            = 1
@@ -46,6 +46,7 @@ $settings = [ordered]@{
     AutoHideTransparent     = $false
     SlideTaskbarButtons     = $false
     ShowClockSeconds        = $false
+    ClockClickAction        = 0
     AllowBlurBehind         = $false
 }
 
