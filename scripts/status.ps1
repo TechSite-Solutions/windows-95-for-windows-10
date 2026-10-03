@@ -12,6 +12,24 @@ $manifest = Get-ComponentManifest
 Write-Host ("Pinned RetroBar:   {0}" -f $manifest.retrobar.version)
 Write-Host ("Pinned Open-Shell: {0}" -f $manifest.openshell.version)
 
+$clockDir = Join-Path $env:LOCALAPPDATA "Windows95ForWindows10\Clock"
+$clockScript = Join-Path $clockDir "Win95ClockCompanion.ps1"
+$clockConfig = Join-Path $clockDir "clock-config.json"
+$clockPidFile = Join-Path $clockDir "companion.pid"
+Write-Host ("Clock companion installed: {0}" -f (Test-Path $clockScript))
+if (Test-Path $clockConfig) {
+    try {
+        $clock = Get-Content $clockConfig -Raw | ConvertFrom-Json
+        Write-Host ("  Mode: {0}" -f $clock.Mode)
+        Write-Host ("  Hover delay: {0} ms" -f $clock.HoverDelayMs)
+    } catch {
+        Write-Warning "Clock companion config could not be parsed."
+    }
+}
+if (Test-Path $clockPidFile) {
+    Write-Host ("  PID: {0}" -f ((Get-Content $clockPidFile -Raw).Trim()))
+}
+
 $retro = Get-RetroBarExe
 $open = Get-OpenShellExe
 $retroSettings = Join-Path $env:LOCALAPPDATA "RetroBar\settings.json"
@@ -29,6 +47,12 @@ if (Test-Path $retroSettings) {
         Write-Host ("  Theme: {0}" -f $retroConfig.Theme)
         Write-Host ("  Quick Launch: {0}" -f $retroConfig.ShowQuickLaunch)
         Write-Host ("  Clock: {0}" -f $retroConfig.ShowClock)
+        if ($retroConfig.PSObject.Properties.Name -contains "ShowInputLanguage") {
+            Write-Host ("  Input language: {0}" -f $retroConfig.ShowInputLanguage)
+        }
+        if ($retroConfig.PSObject.Properties.Name -contains "ClockClickAction") {
+            Write-Host ("  Clock click action: {0}" -f $retroConfig.ClockClickAction)
+        }
     } catch {
         Write-Warning "RetroBar settings.json exists but could not be parsed."
     }
