@@ -4,6 +4,9 @@
 
 ### Added
 
+- classic RetroBar language switcher integration with native Windows input-indicator suppression;
+- backup/restore coverage for Windows language-bar state;
+
 - Win95 Clock Companion with Authentic date-tooltip mode and Enhanced hover-calendar mode;
 - safe startup/uninstall integration for the clock companion;
 
