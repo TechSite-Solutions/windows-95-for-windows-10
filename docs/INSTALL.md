@@ -31,14 +31,15 @@ Order:
 3. creates a timestamped rollback backup;
 4. attempts to create a System Restore point;
 5. applies the Windows 95 base palette;
-6. applies classic shell/window metrics;
-7. enables classic desktop namespace icons and labels;
-8. downloads the pinned RetroBar release;
+6. applies Full Shell mode (light system UI, teal desktop refresh, Explorer/Control Panel classic preferences);
+7. applies classic shell/window metrics;
+8. enables classic desktop namespace icons and labels;
+9. downloads the pinned RetroBar release;
 9. verifies the RetroBar SHA-256 digest;
 10. installs/configures RetroBar;
-11. downloads the pinned Open-Shell release;
-12. verifies the Open-Shell SHA-256 digest;
-13. installs/configures Open-Shell;
+12. downloads the pinned Open-Shell release;
+13. verifies the Open-Shell SHA-256 digest;
+14. installs/configures Open-Shell Start Menu + Classic Explorer;
 14. records state/last-install.json;
 15. starts the configured shell components;
 16. runs configuration verification.
@@ -162,6 +163,10 @@ Skip Open-Shell:
 
     .\scripts\install.ps1 -SkipOpenShell
 
+Skip Full Shell conversion:
+
+    .\scripts\install.ps1 -SkipFullShell
+
 Skip classic metrics:
 
     .\scripts\install.ps1 -SkipMetrics
@@ -209,3 +214,8 @@ Strict configured-state verification:
 Sign out and sign back in after installation for the most reliable update of cached shell metrics, desktop labels and appearance.
 
 See TROUBLESHOOTING.md if a component still looks modern.
+
+
+## Full Shell details
+
+See [FULL-SHELL.md](FULL-SHELL.md) for the Explorer, Control Panel, light-mode and desktop behavior.
