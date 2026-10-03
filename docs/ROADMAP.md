@@ -2,88 +2,90 @@
 
 ## M0 — Foundation
 
-- [x] Public repository
-- [x] README
+- [x] public repository
+- [x] README and documentation
 - [x] safety principles
-- [x] install guide
-- [x] uninstall guide
-- [x] architecture
-- [x] design specification
-- [x] initial backup/restore scripts
+- [x] asset/copyright policy
+- [x] initial backup/restore
+- [x] PowerShell CI parsing
 
 ## M1 — Base Windows 95 appearance
 
-- [x] canonical color palette
-- [x] registry-based user color profile
-- [ ] test on clean Windows 10
-- [ ] verify DPI 100%, 125%, 150%
-- [ ] document sign-out/restart behavior
+- [x] canonical Windows 95 palette
+- [x] teal desktop
+- [x] classic-like WindowMetrics
+- [x] classic desktop namespace visibility/labels
+- [ ] native clean Windows 10 validation
+- [ ] validate DPI 100%, 125%, 150%
+- [ ] validate multi-monitor behavior
 
 ## M2 — Taskbar
 
-- [ ] RetroBar compatibility matrix
-- [ ] recommended settings export
-- [ ] startup configuration
-- [ ] multi-monitor verification
-- [ ] tray/clock verification
+- [x] RetroBar automated install
+- [x] pinned release + SHA-256
+- [x] Windows 95-98 configuration
+- [x] clock/Quick Launch profile
+- [x] autostart
+- [ ] native tray/clock soak
+- [ ] multi-monitor validation
 
 ## M3 — Start menu
 
-- [ ] Open-Shell recommended configuration
-- [ ] reproducible settings export
-- [ ] Windows-key behavior
-- [ ] Start-button alignment with RetroBar
+- [x] Open-Shell automated install
+- [x] pinned release + SHA-256
+- [x] Classic1 / Classic Skin profile
+- [x] Windows key behavior
+- [x] AlignToWorkArea
+- [x] duplicate Start-button prevention
+- [ ] native compatibility validation with RetroBar
 
-## M4 — Icons
+## M4 — Assets
 
-- [ ] clean-room icon language
-- [ ] My Computer
-- [ ] Network
-- [ ] Recycle Bin
-- [ ] folders
-- [ ] drives
-- [ ] document types
+- [x] public asset policy
+- [x] user-owned cursor importer
+- [x] user-owned sound importer
+- [ ] clean-room public icon set
+- [ ] clean-room public cursor set
+- [ ] original project sound set
+- [ ] optional user-owned icon import
 
-## M5 — Cursors
+## M5 — Installer and rollback
 
-- [ ] clean-room cursor set
-- [ ] installer
-- [ ] cursor scheme registration
-- [ ] rollback
-
-## M6 — Sounds
-
-- [ ] sound scheme framework
-- [ ] original/recreated project sounds
-- [ ] optional user-side import support
-
-## M7 — Window chrome
-
-- [ ] evaluate WindowBlinds compatibility
-- [ ] document supported setup
-- [ ] optional full-theme profile
-- [ ] rollback validation
-
-## M8 — Installer UX
-
-- [ ] interactive PowerShell installer
+- [x] one-click Install.cmd
+- [x] one-click Uninstall.cmd
+- [x] automatic backup
+- [x] best-effort restore point
+- [x] install state tracking
+- [x] automatic rollback on install failure
+- [x] preserve pre-existing third-party components
+- [x] uninstall components installed by project
+- [x] strict verification script
 - [ ] dry-run mode
-- [ ] component selection
-- [ ] automatic backup
-- [ ] clear rollback summary
+- [ ] interactive component chooser
 
-## M9 — Validation
+## M6 — Window chrome
 
-- [ ] Windows 10 22H2 test
-- [ ] clean VM soak
-- [ ] update/reboot testing
-- [ ] uninstall/restore testing
+- [ ] evaluate optional WindowBlinds profile
+- [ ] document supported skinning path
+- [ ] validate title-bar/caption-button appearance
+- [ ] maintain a safe standard mode without DLL patching
+
+## M7 — Native validation
+
+- [ ] Windows 10 22H2 clean VM
+- [ ] installation from fresh clone
+- [ ] sign-out/reboot testing
+- [ ] Windows Update/reboot testing
+- [ ] rollback validation
+- [ ] repeated install/uninstall cycles
+- [ ] 100/125/150% DPI
+- [ ] multi-monitor
 - [ ] accessibility sanity check
 
-## M10 — v1.0
+## M8 — v1.0
 
-- [ ] stable installer
-- [ ] stable rollback
+- [ ] native acceptance complete
 - [ ] screenshots
-- [ ] release notes
 - [ ] packaged release
+- [ ] release notes
+- [ ] known-limitations matrix
