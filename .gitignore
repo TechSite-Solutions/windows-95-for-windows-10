@@ -2,6 +2,13 @@
 backups/*
 !backups/.gitkeep
 
+# Runtime state created on the user's machine
+state/
+
+# User-owned/proprietary local assets
+local-assets/*
+!local-assets/README.md
+
 # Local downloads / third-party installers
 downloads/
 third-party/bin/
