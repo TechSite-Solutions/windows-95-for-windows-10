@@ -65,6 +65,21 @@ if (-not $retroBar) {
     }
 }
 
+$languageBarCommand = Get-Command Get-WinLanguageBarOption -ErrorAction SilentlyContinue
+if ($languageBarCommand) {
+    try {
+        $languageBar = Get-WinLanguageBarOption
+        if (-not $languageBar.IsLegacyLanguageBar) {
+            $failures.Add("Legacy language bar mode is not enabled, so the native Windows input indicator may remain visible.")
+        }
+        Test-ExpectedRegistryValue -Path "HKCU:\Software\Microsoft\CTF\LangBar" -Name "ShowStatus" -Expected 3
+    } catch {
+        $warnings.Add("Could not verify Windows language bar mode.")
+    }
+} else {
+    $warnings.Add("Get-WinLanguageBarOption is unavailable; native Windows input indicator suppression was not verified.")
+}
+
 $openShell = Get-OpenShellExe
 if (-not $openShell) {
     $warnings.Add("Open-Shell is not installed.")
