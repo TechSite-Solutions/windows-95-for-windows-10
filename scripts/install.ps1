@@ -4,6 +4,7 @@ param(
     [switch]$SkipMetrics,
     [switch]$SkipDesktopIcons,
     [switch]$SkipFullShell,
+    [switch]$SkipClockCompanion,
     [switch]$SkipRestorePoint,
     [switch]$NoLaunch,
     [switch]$AllowUnsupportedWindows,
@@ -33,6 +34,7 @@ if ($DryRun) {
     Write-Host ("Classic metrics: {0}" -f (-not $SkipMetrics))
     Write-Host ("Classic desktop icons/labels: {0}" -f (-not $SkipDesktopIcons))
     Write-Host ("Full shell profile: {0}" -f (-not $SkipFullShell))
+    Write-Host ("Win95 clock/calendar: {0}" -f (-not $SkipClockCompanion))
     Write-Host ("RetroBar: {0}" -f $(if ($SkipRetroBar) { "skip" } else { "install/configure " + $manifest.retrobar.version }))
     Write-Host ("Open-Shell: {0}" -f $(if ($SkipOpenShell) { "skip" } else { "install/configure " + $manifest.openshell.version }))
     Write-Host ("Restore point attempt: {0}" -f (-not $SkipRestorePoint))
@@ -59,13 +61,14 @@ try {
     if (-not $backupPath) { throw "Backup did not return a path." }
 
     $state = [ordered]@{
-        SchemaVersion = 2
+        SchemaVersion = 3
         StartedAt = (Get-Date).ToString("o")
         BackupPath = [string]$backupPath
         RetroBarPreExisting = $retroBarBefore
         OpenShellPreExisting = $openShellBefore
         RetroBarInstalledByProject = $false
         OpenShellInstalledByProject = $false
+        ClockCompanionInstalledByProject = $false
         ImportedAssets = [bool]$ImportAssetsFrom
         Completed = $false
     }
@@ -107,6 +110,11 @@ try {
         $state.RetroBarInstalledByProject = (-not $retroBarBefore) -and [bool](Get-RetroBarExe)
     }
 
+    if (-not $SkipClockCompanion) {
+        & (Join-Path $PSScriptRoot "install-clock-companion.ps1") -Mode Enhanced -NoLaunch
+        $state.ClockCompanionInstalledByProject = $true
+    }
+
     if (-not $SkipOpenShell) {
         & (Join-Path $PSScriptRoot "install-openshell.ps1") -NoConfigure
         & (Join-Path $PSScriptRoot "configure-openshell.ps1") -NoLaunch
@@ -130,6 +138,17 @@ try {
         if (-not $SkipOpenShell) {
             $openShell = Get-OpenShellExe
             if ($openShell) { Stop-ProcessIfRunning -Name "StartMenu"; Start-Process $openShell }
+        }
+        if (-not $SkipClockCompanion) {
+            $clockScript = Join-Path $env:LOCALAPPDATA "Windows95ForWindows10\Clock\Win95ClockCompanion.ps1"
+            $clockConfig = Join-Path $env:LOCALAPPDATA "Windows95ForWindows10\Clock\clock-config.json"
+            if (Test-Path $clockScript) {
+                Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @(
+                    "-NoLogo","-NoProfile","-ExecutionPolicy","Bypass",
+                    "-File",('"{0}"' -f $clockScript),
+                    "-ConfigPath",('"{0}"' -f $clockConfig)
+                )
+            }
         }
     }
 
