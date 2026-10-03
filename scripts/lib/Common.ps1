@@ -198,6 +198,20 @@ function Get-OpenShellExe {
     return $null
 }
 
+function Get-ClassicExplorerSettingsExe {
+    $programFilesX86 = [Environment]::GetEnvironmentVariable("ProgramFiles(x86)")
+    $candidates = @(
+        (Join-Path $env:ProgramFiles "Open-Shell\ClassicExplorerSettings.exe"),
+        $(if ($programFilesX86) { Join-Path $programFilesX86 "Open-Shell\ClassicExplorerSettings.exe" })
+    ) | Where-Object { $_ }
+
+    foreach ($path in $candidates) {
+        if (Test-Path $path) { return $path }
+    }
+
+    return $null
+}
+
 function Set-RegistryValue {
     param(
         [Parameter(Mandatory=$true)][string]$Path,
