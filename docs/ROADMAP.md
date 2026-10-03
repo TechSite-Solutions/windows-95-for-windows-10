@@ -43,6 +43,17 @@
 - [ ] multi-monitor/DPI acceptance
 - [ ] replace RetroBar hard-coded double-click timedate.cpl via maintained patch/fork
 
+## M2.3 — Language indicator
+
+- [x] enable RetroBar input-language switcher
+- [x] suppress the native Windows 10 taskbar input indicator
+- [x] hide the legacy desktop language bar
+- [x] preserve installed keyboard layouts and input methods
+- [x] back up/restore Windows language-bar state
+- [x] expose language switcher diagnostics
+- [ ] native Windows 10 visual acceptance against Windows 95 reference
+- [ ] validate language menu/gripper behavior at 100%, 125%, 150% DPI
+
 ## M3 — Start menu
 
 - [x] pin verified Open-Shell release
