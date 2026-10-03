@@ -27,10 +27,7 @@ if (-not $SkipRetroBar) {
 }
 
 if (-not $SkipOpenShell) {
-    & (Join-Path $PSScriptRoot "install-openshell.ps1")
-    if ($NoLaunch) {
-        & (Join-Path $PSScriptRoot "configure-openshell.ps1") -NoLaunch
-    }
+    & (Join-Path $PSScriptRoot "install-openshell.ps1") -NoLaunch:$NoLaunch
 }
 
 Write-Host ""
