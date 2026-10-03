@@ -40,3 +40,7 @@ jobs:
         run: |
           Get-Content .\config\components.json -Raw | ConvertFrom-Json | Out-Null
           Write-Host "components.json OK"
+
+      - name: Run manifest policy test
+        shell: pwsh
+        run: .\tests\test-manifest.ps1
