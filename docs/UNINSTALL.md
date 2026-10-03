@@ -1,51 +1,79 @@
 # Uninstall and rollback
 
-There are two rollback levels.
+The project is designed so visual changes can be rolled back without replacing Windows system files.
 
-## Level 1: restore the backup created by this project
+## 1. Find your backup
 
-Find the backup folder created by:
+Each automated installation creates:
 
-```powershell
-.\scripts\backup.ps1
+```text
+backups\YYYYMMDD-HHMMSS\
 ```
 
-Then run:
+The directory can contain:
+
+- `colors.reg`
+- `desktop.reg`
+- `openshell.reg`
+- `run.reg`
+- `retrobar-settings.json`
+- `backup.json`
+
+## 2. Restore settings
+
+Run:
+
+```powershell
+.\scripts\uninstall.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS"
+```
+
+Or restore only the saved configuration:
 
 ```powershell
 .\scripts\restore.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS"
 ```
 
-After restoration, sign out and sign back in.
+## 3. Remove third-party programs
 
-## Level 2: manual component removal
+The project intentionally does not force-delete third-party software.
 
-### RetroBar
+Use **Settings → Apps** / **Programs and Features** to uninstall:
 
-Exit RetroBar and uninstall/remove it using its normal installation method.
+- RetroBar
+- Open-Shell
 
-### Open-Shell
+This allows their official uninstall logic to run.
 
-Uninstall Open-Shell from Windows Apps & Features / Programs and Features.
+## Keep a component installed
 
-### WindowBlinds
+You may keep RetroBar:
 
-If you installed the optional WindowBlinds layer, switch back to the default Windows theme before uninstalling it.
+```powershell
+.\scripts\uninstall.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS" -KeepRetroBar
+```
 
-## Restore Point fallback
+Or keep Open-Shell:
 
-If a configuration becomes unusable, use the restore point created before installation:
+```powershell
+.\scripts\uninstall.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS" -KeepOpenShell
+```
+
+## 4. Sign out / sign in
+
+After rollback and component removal, sign out of Windows and sign back in.
+
+## Emergency fallback
+
+If the shell becomes difficult to use, restore the System Restore point created before installation:
 
 ```text
 Before Windows 95 Theme
 ```
 
-## What this project does not modify
+## Files the standard installer does not replace
 
-The standard installer does not replace:
+- `explorer.exe`
+- `uxtheme.dll`
+- `themeui.dll`
 
-- explorer.exe
-- uxtheme.dll
-- themeui.dll
-
-That is deliberate so rollback remains simple.
+It also does not disable Defender or Windows security.
