@@ -1,29 +1,49 @@
 # Security
 
-## Supported scope
+## Supported target
 
-This project modifies Windows appearance settings and integrates third-party shell utilities.
+The project is designed for Windows 10 64-bit.
 
-The standard installer deliberately avoids:
+## Security principles
 
-- patching protected Windows DLLs;
-- replacing explorer.exe;
-- disabling Microsoft Defender;
-- disabling Windows security features;
-- bypassing driver or code-signing enforcement.
+The standard installer:
 
-## Third-party downloads
+- does not patch protected Windows DLLs;
+- does not replace `explorer.exe`;
+- does not disable Defender;
+- does not disable Windows Update;
+- does not disable code-signing checks;
+- does not require a permanently relaxed PowerShell execution policy;
+- downloads third-party installers only from their official GitHub release repositories.
 
-Pinned releases are recorded in `config/components.json` with SHA-256 hashes.
+## PowerShell policy
 
-If a downloaded file does not match the expected hash, installation must stop.
+Documentation uses:
 
-## Reporting a security issue
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+```
 
-Do not publish secrets, access tokens or personal data in an issue.
+This applies only to the current PowerShell process.
 
-For ordinary non-sensitive bugs, use GitHub Issues.
+## Third-party software
 
-## Local backups
+RetroBar and Open-Shell are independent upstream projects.
 
-The `backups/` and `state/` directories can contain machine/user-specific registry data and are excluded from Git.
+Their installation packages are not committed to this repository. The scripts retrieve official stable release assets at install time.
+
+## Backups
+
+Run the standard `install.ps1` path so a timestamped backup is created before visual configuration is changed.
+
+Do not commit the generated `backups\` contents; they can include machine/user-specific registry data.
+
+## Local assets
+
+`local-assets\` is ignored because users may place licensed/proprietary resources there for personal use.
+
+Never open a pull request containing extracted Microsoft Windows resources.
+
+## Reporting a security problem
+
+Do not post secrets, private registry exports, tokens or personal files in a public issue. Describe the problem without sensitive data.
