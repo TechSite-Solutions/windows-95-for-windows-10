@@ -1,66 +1,128 @@
 # Architecture
 
-The project is layered so each visual component can be enabled or removed independently.
+The project is intentionally layered so visual components can be applied and rolled back independently.
 
-```text
-Windows 10
-│
-├── Base appearance layer
-│   ├── user color registry values
-│   ├── desktop background color
-│   └── classic palette
-│
-├── Taskbar layer
-│   └── RetroBar
-│
-├── Start menu layer
-│   └── Open-Shell
-│
-├── Window chrome layer
-│   └── optional WindowBlinds
-│
-├── Asset layer
-│   ├── clean-room icons
-│   ├── cursors
-│   └── sounds/imports
-│
-└── Safety layer
-    ├── backup
-    ├── restore
-    ├── system checks
-    └── documentation
-```
+    Windows 10
+    |
+    +-- Safety / transaction layer
+    |   +-- system check
+    |   +-- timestamped registry/file backup
+    |   +-- best-effort System Restore point
+    |   +-- install state tracking
+    |   +-- rollback/uninstall
+    |
+    +-- Base appearance layer
+    |   +-- Windows 95 color palette
+    |   +-- teal desktop
+    |   +-- classic-like WindowMetrics
+    |   +-- desktop namespace icons/labels
+    |
+    +-- Taskbar layer
+    |   +-- RetroBar
+    |       +-- Windows 95-98 theme
+    |       +-- Start button
+    |       +-- clock
+    |       +-- Quick Launch
+    |
+    +-- Start-menu layer
+    |   +-- Open-Shell
+    |       +-- Classic1
+    |       +-- Classic Skin
+    |       +-- Windows-key routing
+    |       +-- no duplicate Start button
+    |
+    +-- Local asset layer
+    |   +-- user-owned desktop ICO files
+    |   +-- user-owned CUR/ANI files
+    |   +-- user-owned WAV files
+    |
+    +-- Optional full-chrome layer
+        +-- third-party window-frame skinning such as WindowBlinds
 
 ## Why layers?
 
-Windows 10 does not expose every classic visual control through one supported theme API.
+Windows 10 does not expose every Windows 95 visual primitive through one supported theme API.
 
-Using layers provides:
+Layering provides:
 
 - safer rollback;
-- easier troubleshooting;
-- independent component replacement;
-- less dependency on unsupported DLL patching.
+- component-by-component troubleshooting;
+- no protected DLL replacement in standard mode;
+- preservation of existing RetroBar/Open-Shell installations;
+- a clear trust boundary for third-party software and proprietary assets.
+
+## Install transaction
+
+scripts/install.ps1 is the orchestrator.
+
+High-level flow:
+
+1. validate Windows;
+2. record whether third-party components already exist;
+3. create a rollback backup;
+4. record install state;
+5. attempt a System Restore point;
+6. apply base colors;
+7. apply classic metrics;
+8. configure classic desktop entries;
+9. install/configure RetroBar;
+10. install/configure Open-Shell;
+11. optionally import user-owned assets;
+12. write completed install state;
+13. launch components;
+14. run strict verification.
+
+If a theme-stage error occurs after backup creation, the installer attempts to restore the appearance snapshot automatically.
+
+## Dependency trust model
+
+config/components.json pins exact release assets and SHA-256 digests.
+
+The standard installer:
+
+1. downloads only the configured official upstream URL;
+2. calculates SHA-256 locally;
+3. refuses to execute the file if the digest differs.
+
+## Rollback model
+
+scripts/uninstall.ps1 reads state/last-install.json and restores the matching backup.
+
+If RetroBar/Open-Shell existed before the project ran, they are preserved.
+
+If they were installed by this project, rollback can remove them through their registered uninstallers.
+
+## Asset model
+
+The public repository does not contain extracted Microsoft Windows 95 resources.
+
+User-owned assets can be staged in local-assets/ and imported to:
+
+    %LOCALAPPDATA%\Windows95ForWindows10\Assets
+
+Registry/file state required to roll those changes back is captured by the standard backup.
 
 ## Standard mode
 
-Standard mode uses:
+Standard mode uses only:
 
-- included registry/profile scripts;
+- project PowerShell scripts;
 - RetroBar;
-- Open-Shell.
+- Open-Shell;
+- optional user-owned assets.
 
-## Full mode
+It does not patch Windows system binaries.
 
-Full mode may additionally use:
+## Full-chrome mode
 
-- WindowBlinds or another maintained skinning solution.
+Windows 10 title bars and non-client rendering cannot be made fully identical to Windows 95 using only supported current-user settings.
 
-Full mode is optional because deeper shell/window skinning carries more compatibility risk.
+A deeper window-frame layer therefore remains optional and must be validated separately.
 
 ## Non-goals for the standard installer
 
-- replacing Windows system binaries;
-- disabling Windows security;
+- replacing explorer.exe;
+- patching uxtheme.dll/themeui.dll;
+- disabling Defender/security;
 - bypassing code-signing protections;
-- shipping extracted Microsoft Windows 95 resources.
+- shipping extracted Microsoft Windows 95 assets.
