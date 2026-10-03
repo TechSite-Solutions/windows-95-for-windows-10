@@ -34,6 +34,9 @@ switch ($choice) {
         if ((Read-Host "Install/configure Open-Shell? [Y/n]") -match '^[Nn]') {
             $params.SkipOpenShell = $true
         }
+        if ((Read-Host "Apply full Windows 95 shell profile (light system UI, teal desktop, classic Explorer/Control Panel)? [Y/n]") -match '^[Nn]') {
+            $params.SkipFullShell = $true
+        }
         if ((Read-Host "Apply classic WindowMetrics? [Y/n]") -match '^[Nn]') {
             $params.SkipMetrics = $true
         }
