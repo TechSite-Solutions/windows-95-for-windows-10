@@ -11,7 +11,7 @@ $errors=$null
 if ($errors.Count -gt 0) { throw ($errors -join "; ") }
 
 $source = Get-Content $script -Raw
-foreach ($needle in @("Authentic","Enhanced","ClockHitPixels","Windows 95")) {
+foreach ($needle in @("Authentic","Enhanced","ClockHitPixels","Win95 Clock Companion")) {
     if ($source -notmatch [regex]::Escape($needle)) {
         throw "Clock companion missing expected token: $needle"
     }
