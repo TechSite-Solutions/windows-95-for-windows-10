@@ -174,13 +174,13 @@ Configure without launching RetroBar/Open-Shell immediately:
 
     .\scripts\install.ps1 -NoLaunch
 
-## User-owned cursors and sounds
+## User-owned cursors, sounds and icons
 
 Prepare a folder as documented in ASSET-IMPORT.md, then run:
 
-    .\scripts\import-user-assets.ps1 -SourceDirectory "C:\MyWin95Assets" -ApplyCursors -ApplySounds
+    .\scripts\import-user-assets.ps1 -SourceDirectory "C:\MyWin95Assets" -ApplyCursors -ApplySounds -ApplyIcons
 
-These files are copied only to the local PC. They are never committed by the project.
+These files are copied only to the local PC. They are never committed by the project.\n\nTo apply all supplied local assets as part of the main installation:\n\n    .\\scripts\\install.ps1 -ImportAssetsFrom "C:\\MyWin95Assets"
 
 ## Verify
 
