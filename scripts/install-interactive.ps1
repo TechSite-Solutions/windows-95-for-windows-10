@@ -28,6 +28,10 @@ switch ($choice) {
         $params.SkipOpenShell = $true
     }
     "4" {
+        if ((Read-Host "Install Windows 95 clock/calendar companion? [Y/n]") -match '^[Nn]') {
+            $params.SkipClockCompanion = $true
+        }
+
         if ((Read-Host "Install/configure RetroBar? [Y/n]") -match '^[Nn]') {
             $params.SkipRetroBar = $true
         }
