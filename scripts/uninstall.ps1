@@ -49,10 +49,13 @@ function Invoke-UninstallEntry {
     )
 
     $command = $null
-    if ($Entry.QuietUninstallString) {
-        $command = [string]$Entry.QuietUninstallString
-    } elseif ($Entry.UninstallString) {
-        $command = [string]$Entry.UninstallString
+    $quietUninstall = Get-ObjectPropertyValue -Object $Entry -Name "QuietUninstallString"
+    $uninstall = Get-ObjectPropertyValue -Object $Entry -Name "UninstallString"
+
+    if ($quietUninstall) {
+        $command = [string]$quietUninstall
+    } elseif ($uninstall) {
+        $command = [string]$uninstall
     }
 
     if (-not $command) {
@@ -105,13 +108,17 @@ function Invoke-UninstallEntry {
 if (-not $KeepThirdParty -and $state) {
     if ($state.RetroBarInstalledByProject) {
         Stop-ProcessIfRunning -Name "RetroBar"
-        $entry = Get-UninstallEntries | Where-Object { $_.DisplayName -eq "RetroBar" } | Select-Object -First 1
+        $entry = Get-UninstallEntries | Where-Object {
+            (Get-ObjectPropertyValue -Object $_ -Name "DisplayName") -eq "RetroBar"
+        } | Select-Object -First 1
         if ($entry) { Invoke-UninstallEntry -Entry $entry -Kind "RetroBar" }
     }
 
     if ($state.OpenShellInstalledByProject) {
         Stop-ProcessIfRunning -Name "StartMenu"
-        $entry = Get-UninstallEntries | Where-Object { $_.DisplayName -match "^Open-Shell" } | Select-Object -First 1
+        $entry = Get-UninstallEntries | Where-Object {
+            (Get-ObjectPropertyValue -Object $_ -Name "DisplayName") -match "^Open-Shell"
+        } | Select-Object -First 1
         if ($entry) { Invoke-UninstallEntry -Entry $entry -Kind "OpenShell" }
     }
 }
