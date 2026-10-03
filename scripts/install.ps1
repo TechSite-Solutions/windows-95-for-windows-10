@@ -1,49 +1,39 @@
+param(
+    [switch]$SkipRetroBar,
+    [switch]$SkipOpenShell,
+    [switch]$NoLaunch
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "lib\Common.ps1")
 
-Write-Host "Applying Windows 95 base appearance..."
-Write-Host "This changes current-user appearance values only."
+Assert-Windows10
 
-$colorsKey = "HKCU:\Control Panel\Colors"
+Write-Host "Windows 95 for Windows 10"
+Write-Host "========================="
+Write-Host "This installer will:"
+Write-Host " - back up current user appearance settings"
+Write-Host " - apply the Windows 95 base palette"
+Write-Host " - install/configure RetroBar unless skipped"
+Write-Host " - install/configure Open-Shell unless skipped"
+Write-Host ""
 
-$colors = @{
-    Background          = "0 128 128"
-    ActiveTitle         = "0 0 128"
-    TitleText           = "255 255 255"
-    InactiveTitle       = "128 128 128"
-    InactiveTitleText   = "192 192 192"
-    Window              = "255 255 255"
-    WindowText          = "0 0 0"
-    ButtonFace          = "192 192 192"
-    ButtonText          = "0 0 0"
-    ButtonHilight       = "255 255 255"
-    ButtonLight         = "223 223 223"
-    ButtonShadow        = "128 128 128"
-    ButtonDkShadow      = "0 0 0"
-    Hilight             = "0 0 128"
-    HilightText         = "255 255 255"
-    GrayText            = "128 128 128"
-    Menu                = "192 192 192"
-    MenuText            = "0 0 0"
-    Scrollbar           = "192 192 192"
-    AppWorkspace        = "128 128 128"
-    InfoWindow          = "255 255 225"
-    InfoText            = "0 0 0"
+& (Join-Path $PSScriptRoot "backup.ps1")
+& (Join-Path $PSScriptRoot "apply-base-theme.ps1")
+
+if (-not $SkipRetroBar) {
+    & (Join-Path $PSScriptRoot "install-retrobar.ps1") -NoLaunch:$NoLaunch
 }
 
-foreach ($name in $colors.Keys) {
-    Set-ItemProperty -Path $colorsKey -Name $name -Value $colors[$name]
-    Write-Host ("Set {0} = {1}" -f $name, $colors[$name])
+if (-not $SkipOpenShell) {
+    & (Join-Path $PSScriptRoot "install-openshell.ps1")
+    if ($NoLaunch) {
+        & (Join-Path $PSScriptRoot "configure-openshell.ps1") -NoLaunch
+    }
 }
 
-$desktopKey = "HKCU:\Control Panel\Desktop"
-Set-ItemProperty -Path $desktopKey -Name "Wallpaper" -Value ""
-
 Write-Host ""
-Write-Host "Base Windows 95 profile applied."
-Write-Host "Sign out and sign in again for the most reliable refresh."
-Write-Host ""
-Write-Host "Next:"
-Write-Host "1. Install/configure RetroBar."
-Write-Host "2. Install/configure Open-Shell."
-Write-Host "3. See docs\INSTALL.md."
+Write-Host "Installation stage complete."
+Write-Host "Run .\scripts\status.ps1 to inspect the setup."
+Write-Host "For the most reliable visual refresh, sign out of Windows and sign back in."
