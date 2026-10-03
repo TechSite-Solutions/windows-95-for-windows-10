@@ -1,0 +1,13 @@
+# Local backups contain machine/user-specific registry exports
+backups/*
+!backups/.gitkeep
+
+# Local downloads / third-party installers
+downloads/
+third-party/bin/
+
+# Temporary files
+*.tmp
+*.log
+Thumbs.db
+Desktop.ini
