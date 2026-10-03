@@ -1,79 +1,71 @@
 # Uninstall and rollback
 
-The project is designed so visual changes can be rolled back without replacing Windows system files.
+The standard project is designed to return to the recorded pre-install appearance without replacing Windows system binaries.
 
-## 1. Find your backup
+## Fast rollback
 
-Each automated installation creates:
+Double-click:
 
-```text
-backups\YYYYMMDD-HHMMSS\
-```
+    Uninstall.cmd
 
-The directory can contain:
+or run:
 
-- `colors.reg`
-- `desktop.reg`
-- `openshell.reg`
-- `run.reg`
-- `retrobar-settings.json`
-- `backup.json`
+    .\scripts\uninstall.ps1
 
-## 2. Restore settings
+The script automatically reads state/last-install.json and restores the backup created by the matching installation.
 
-Run:
+If state is missing, it can fall back to the newest backup directory.
 
-```powershell
-.\scripts\uninstall.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS"
-```
+## Explicit backup
 
-Or restore only the saved configuration:
+To choose a specific snapshot:
 
-```powershell
-.\scripts\restore.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS"
-```
+    .\scripts\uninstall.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS"
 
-## 3. Remove third-party programs
+To restore settings only:
 
-The project intentionally does not force-delete third-party software.
+    .\scripts\restore.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS"
 
-Use **Settings → Apps** / **Programs and Features** to uninstall:
+## Third-party components
 
-- RetroBar
-- Open-Shell
+If RetroBar or Open-Shell existed before this project ran, uninstall.ps1 preserves them.
 
-This allows their official uninstall logic to run.
+If they were installed by this project, uninstall.ps1 attempts to remove them through their registered uninstallers.
 
-## Keep a component installed
+To keep third-party programs even when this project installed them:
 
-You may keep RetroBar:
+    .\scripts\uninstall.ps1 -KeepThirdParty
 
-```powershell
-.\scripts\uninstall.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS" -KeepRetroBar
-```
+## Imported assets
 
-Or keep Open-Shell:
+Imported cursor/sound files are kept by default.
 
-```powershell
-.\scripts\uninstall.ps1 -BackupPath ".\backups\YYYYMMDD-HHMMSS" -KeepOpenShell
-```
+To remove the project local asset directory too:
 
-## 4. Sign out / sign in
+    .\scripts\uninstall.ps1 -RemoveImportedAssets
 
-After rollback and component removal, sign out of Windows and sign back in.
+## What is restored
+
+Depending on the snapshot, rollback restores:
+
+- Windows colors;
+- desktop settings and classic metrics;
+- cursor settings;
+- AppEvents sound settings;
+- Open-Shell Start Menu settings;
+- desktop namespace icon visibility;
+- desktop namespace label overrides;
+- RetroBar settings.json;
+- previous RetroBar autostart value.
+
+## Final refresh
+
+Sign out and sign back in after rollback.
 
 ## Emergency fallback
 
-If the shell becomes difficult to use, restore the System Restore point created before installation:
+If Windows becomes difficult to use, use the Windows System Restore point:
 
-```text
-Before Windows 95 Theme
-```
+    Before Windows 95 Theme
 
-## Files the standard installer does not replace
-
-- `explorer.exe`
-- `uxtheme.dll`
-- `themeui.dll`
-
-It also does not disable Defender or Windows security.
+The standard installer never replaces explorer.exe, uxtheme.dll or themeui.dll and never disables Defender/security protections.
