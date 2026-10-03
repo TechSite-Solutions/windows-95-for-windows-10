@@ -12,7 +12,6 @@ Stop-ProcessIfRunning -Name "StartMenu"
 
 $key = "HKCU:\Software\OpenShell\StartMenu\Settings"
 
-# Radio-style Open-Shell settings are persisted as their option names.
 Set-RegistryValue -Path $key -Name "MenuStyle"       -Value "Classic1"     -Type String
 Set-RegistryValue -Path $key -Name "MouseClick"      -Value "ClassicMenu" -Type String
 Set-RegistryValue -Path $key -Name "WinKey"          -Value "ClassicMenu" -Type String
@@ -20,10 +19,10 @@ Set-RegistryValue -Path $key -Name "ShiftClick"      -Value "WindowsMenu" -Type 
 Set-RegistryValue -Path $key -Name "ShiftWin"        -Value "WindowsMenu" -Type String
 Set-RegistryValue -Path $key -Name "AlignToWorkArea" -Value 1             -Type DWord
 
-# Built-in Open-Shell skin installed by the official StartMenu feature.
-Set-RegistryValue -Path $key -Name "SkinC1" -Value "Classic Skin" -Type String
+# RetroBar owns the visible Windows 95 Start button; Open-Shell owns the menu.
+Set-RegistryValue -Path $key -Name "EnableStartButton" -Value 0 -Type DWord
 
-# Compact, opaque behavior closer to Windows 95.
+Set-RegistryValue -Path $key -Name "SkinC1" -Value "Classic Skin" -Type String
 Set-RegistryValue -Path $key -Name "MenuShadow"        -Value 0      -Type DWord
 Set-RegistryValue -Path $key -Name "AeroGlass"         -Value 0      -Type DWord
 Set-RegistryValue -Path $key -Name "EnableGlass"       -Value 0      -Type DWord
