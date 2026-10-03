@@ -55,3 +55,8 @@ jobs:
       - name: Validate Win95 clock companion
         shell: pwsh
         run: .\tests\test-clock-companion.ps1
+
+
+      - name: Run Win95 clock companion self-test
+        shell: powershell
+        run: .\components\clock\Win95ClockCompanion.ps1 -SelfTest
