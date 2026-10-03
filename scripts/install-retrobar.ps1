@@ -50,7 +50,4 @@ if (-not $retroBar) {
 }
 
 Write-Host "RetroBar executable: $retroBar"
-
-if (-not $NoLaunch) {
-    & (Join-Path $PSScriptRoot "configure-retrobar.ps1")
-}
+& (Join-Path $PSScriptRoot "configure-retrobar.ps1") -NoLaunch:$NoLaunch
