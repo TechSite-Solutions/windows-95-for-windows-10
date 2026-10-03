@@ -7,20 +7,24 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $resolved = Resolve-Path $BackupPath
-$colors = Join-Path $resolved "colors.reg"
-$desktop = Join-Path $resolved "desktop.reg"
+Write-Host "Restoring from: $resolved"
 
-if (-not (Test-Path $colors)) {
-    throw "Missing colors.reg in backup."
+$imports = @("colors.reg","desktop.reg","openshell.reg","run.reg")
+foreach ($name in $imports) {
+    $file = Join-Path $resolved $name
+    if (Test-Path $file) {
+        & reg.exe import $file | Out-Null
+        Write-Host "Imported $name"
+    }
 }
-if (-not (Test-Path $desktop)) {
-    throw "Missing desktop.reg in backup."
+
+$retroBackup = Join-Path $resolved "retrobar-settings.json"
+if (Test-Path $retroBackup) {
+    $retroDir = Join-Path $env:LOCALAPPDATA "RetroBar"
+    New-Item -ItemType Directory -Force -Path $retroDir | Out-Null
+    Copy-Item $retroBackup (Join-Path $retroDir "settings.json") -Force
+    Write-Host "Restored RetroBar settings."
 }
-
-Write-Host "Restoring user appearance registry settings..."
-
-reg.exe import $colors | Out-Null
-reg.exe import $desktop | Out-Null
 
 Write-Host "Restore complete."
 Write-Host "Sign out and sign back in to refresh the shell."
