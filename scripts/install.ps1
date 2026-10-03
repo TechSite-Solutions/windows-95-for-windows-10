@@ -3,6 +3,7 @@ param(
     [switch]$SkipOpenShell,
     [switch]$SkipMetrics,
     [switch]$SkipDesktopIcons,
+    [switch]$SkipFullShell,
     [switch]$SkipRestorePoint,
     [switch]$NoLaunch,
     [switch]$AllowUnsupportedWindows,
@@ -31,6 +32,7 @@ if ($DryRun) {
     Write-Host ("Base palette: apply")
     Write-Host ("Classic metrics: {0}" -f (-not $SkipMetrics))
     Write-Host ("Classic desktop icons/labels: {0}" -f (-not $SkipDesktopIcons))
+    Write-Host ("Full shell profile: {0}" -f (-not $SkipFullShell))
     Write-Host ("RetroBar: {0}" -f $(if ($SkipRetroBar) { "skip" } else { "install/configure " + $manifest.retrobar.version }))
     Write-Host ("Open-Shell: {0}" -f $(if ($SkipOpenShell) { "skip" } else { "install/configure " + $manifest.openshell.version }))
     Write-Host ("Restore point attempt: {0}" -f (-not $SkipRestorePoint))
@@ -87,6 +89,10 @@ try {
 
     & (Join-Path $PSScriptRoot "apply-base-theme.ps1") -AllowUnsupportedWindows:$AllowUnsupportedWindows
 
+    if (-not $SkipFullShell) {
+        & (Join-Path $PSScriptRoot "apply-full-shell.ps1") -AllowUnsupportedWindows:$AllowUnsupportedWindows
+    }
+
     if (-not $SkipMetrics) {
         & (Join-Path $PSScriptRoot "apply-classic-metrics.ps1") -AllowUnsupportedWindows:$AllowUnsupportedWindows
     }
@@ -104,6 +110,7 @@ try {
     if (-not $SkipOpenShell) {
         & (Join-Path $PSScriptRoot "install-openshell.ps1") -NoConfigure
         & (Join-Path $PSScriptRoot "configure-openshell.ps1") -NoLaunch
+        & (Join-Path $PSScriptRoot "configure-classic-explorer.ps1") -NoRestartExplorer
         $state.OpenShellInstalledByProject = (-not $openShellBefore) -and [bool](Get-OpenShellExe)
     }
 
