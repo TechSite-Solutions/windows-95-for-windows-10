@@ -4,6 +4,9 @@
 
 ### Added
 
+- Win95 Clock Companion with Authentic date-tooltip mode and Enhanced hover-calendar mode;
+- safe startup/uninstall integration for the clock companion;
+
 - one-click Install.cmd and Uninstall.cmd;
 - Windows 95 base palette and teal desktop;
 - classic 96-DPI-oriented WindowMetrics profile;
