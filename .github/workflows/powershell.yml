@@ -45,3 +45,8 @@ jobs:
       - name: Run manifest policy test
         shell: pwsh
         run: .\tests\test-manifest.ps1
+
+
+      - name: Regression test uninstall registry entries
+        shell: pwsh
+        run: .\tests\test-uninstall-entry-properties.ps1
