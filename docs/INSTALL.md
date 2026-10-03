@@ -219,3 +219,24 @@ See TROUBLESHOOTING.md if a component still looks modern.
 ## Full Shell details
 
 See [FULL-SHELL.md](FULL-SHELL.md) for the Explorer, Control Panel, light-mode and desktop behavior.
+
+
+## Windows 95 clock/calendar companion
+
+The normal installer adds the enhanced Win95 calendar automatically.
+
+Hover over the RetroBar clock for roughly 500 ms to open it.
+
+To switch to historically authentic Windows 95 hover behavior (date tooltip only):
+
+```powershell
+.\scripts\install-clock-companion.ps1 -Mode Authentic
+```
+
+To return to the enhanced hover calendar:
+
+```powershell
+.\scripts\install-clock-companion.ps1 -Mode Enhanced
+```
+
+See [CLOCK-CALENDAR.md](CLOCK-CALENDAR.md).
