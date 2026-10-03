@@ -83,8 +83,8 @@
 - [x] state tracking
 - [x] verification script
 - [x] user-owned asset import switch
-- [ ] interactive menu UI
-- [ ] dry-run mode
+- [x] interactive menu UI
+- [x] dry-run mode
 
 ## M9 — Validation
 
