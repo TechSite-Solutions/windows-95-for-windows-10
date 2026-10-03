@@ -127,6 +127,24 @@ function Get-UninstallEntries {
     }
 }
 
+function Get-ObjectPropertyValue {
+    param(
+        [Parameter(Mandatory=$true)]$Object,
+        [Parameter(Mandatory=$true)][string]$Name
+    )
+
+    if ($null -eq $Object) {
+        return $null
+    }
+
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        return $null
+    }
+
+    return $property.Value
+}
+
 function Get-RetroBarExe {
     $programFilesX86 = [Environment]::GetEnvironmentVariable("ProgramFiles(x86)")
     $candidates = @(
@@ -139,10 +157,16 @@ function Get-RetroBarExe {
         if (Test-Path $path) { return $path }
     }
 
-    $entry = Get-UninstallEntries | Where-Object { $_.DisplayName -eq "RetroBar" } | Select-Object -First 1
-    if ($entry -and $entry.InstallLocation) {
-        $path = Join-Path $entry.InstallLocation "RetroBar.exe"
-        if (Test-Path $path) { return $path }
+    $entry = Get-UninstallEntries | Where-Object {
+        (Get-ObjectPropertyValue -Object $_ -Name "DisplayName") -eq "RetroBar"
+    } | Select-Object -First 1
+
+    if ($entry) {
+        $installLocation = Get-ObjectPropertyValue -Object $entry -Name "InstallLocation"
+        if ($installLocation) {
+            $path = Join-Path ([string]$installLocation) "RetroBar.exe"
+            if (Test-Path $path) { return $path }
+        }
     }
 
     return $null
@@ -160,12 +184,15 @@ function Get-OpenShellExe {
     }
 
     $entry = Get-UninstallEntries | Where-Object {
-        $_.DisplayName -match "^Open-Shell"
+        (Get-ObjectPropertyValue -Object $_ -Name "DisplayName") -match "^Open-Shell"
     } | Select-Object -First 1
 
-    if ($entry -and $entry.InstallLocation) {
-        $path = Join-Path $entry.InstallLocation "StartMenu.exe"
-        if (Test-Path $path) { return $path }
+    if ($entry) {
+        $installLocation = Get-ObjectPropertyValue -Object $entry -Name "InstallLocation"
+        if ($installLocation) {
+            $path = Join-Path ([string]$installLocation) "StartMenu.exe"
+            if (Test-Path $path) { return $path }
+        }
     }
 
     return $null
