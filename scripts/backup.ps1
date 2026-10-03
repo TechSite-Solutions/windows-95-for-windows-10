@@ -45,6 +45,7 @@ $exports.Dwm = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\DWM
 $exports.ExplorerAdvanced = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "explorer-advanced.reg"
 $exports.ExplorerRibbon = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Ribbon" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Ribbon" "explorer-ribbon.reg"
 $exports.ControlPanelView = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" "control-panel-view.reg"
+$exports.CtfLangBar = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\CTF\LangBar" "HKCU\Software\Microsoft\CTF\LangBar" "ctf-langbar.reg"
 $exports.HideDesktopNew = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" "desktop-icons-new.reg"
 $exports.HideDesktopClassic = Export-RegistryKeyIfPresent "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" "desktop-icons-classic.reg"
 
@@ -77,9 +78,22 @@ if ($retroBarSettingsExisted) {
 
 $runSnapshot = Get-RegistryValueSnapshot -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "RetroBar"
 
+$languageBarOptions = $null
+if (Get-Command Get-WinLanguageBarOption -ErrorAction SilentlyContinue) {
+    try {
+        $languageBar = Get-WinLanguageBarOption
+        $languageBarOptions = [ordered]@{
+            IsLegacyLanguageBar = [bool]$languageBar.IsLegacyLanguageBar
+            IsLegacySwitchingMode = [bool]$languageBar.IsLegacySwitchingMode
+        }
+    } catch {
+        Write-Warning "Could not snapshot Windows language bar options."
+    }
+}
+
 $os = Get-WindowsInfo
 $meta = [ordered]@{
-    SchemaVersion = 4
+    SchemaVersion = 5
     CreatedAt = (Get-Date).ToString("o")
     ComputerName = $env:COMPUTERNAME
     UserName = $env:USERNAME
@@ -89,6 +103,7 @@ $meta = [ordered]@{
     IconOverrideExports = $iconOverrideExports
     RetroBarSettingsExisted = $retroBarSettingsExisted
     RetroBarRun = $runSnapshot
+    LanguageBarOptions = $languageBarOptions
     RetroBarInstalled = [bool](Get-RetroBarExe)
     OpenShellInstalled = [bool](Get-OpenShellExe)
 }
