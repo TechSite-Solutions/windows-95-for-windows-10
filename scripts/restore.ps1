@@ -96,6 +96,31 @@ if ($schema -ge 4) {
     }
 }
 
+if ($schema -ge 5) {
+    $setLanguageBar = Get-Command Set-WinLanguageBarOption -ErrorAction SilentlyContinue
+    if ($setLanguageBar -and ($meta.PSObject.Properties.Name -contains "LanguageBarOptions") -and $meta.LanguageBarOptions) {
+        $legacyBar = [bool]$meta.LanguageBarOptions.IsLegacyLanguageBar
+        $legacySwitch = [bool]$meta.LanguageBarOptions.IsLegacySwitchingMode
+
+        if ($legacyBar -and $legacySwitch) {
+            Set-WinLanguageBarOption -UseLegacyLanguageBar -UseLegacySwitchMode
+        } elseif ($legacyBar) {
+            Set-WinLanguageBarOption -UseLegacyLanguageBar
+        } elseif ($legacySwitch) {
+            Set-WinLanguageBarOption -UseLegacySwitchMode
+        } else {
+            Set-WinLanguageBarOption
+        }
+    }
+
+    $ctfProperty = $meta.Exports.PSObject.Properties["CtfLangBar"]
+    if ($ctfProperty -and [bool]$ctfProperty.Value) {
+        Import-RegIfPresent "ctf-langbar.reg"
+    } else {
+        Remove-Item "HKCU:\Software\Microsoft\CTF\LangBar" -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
 if ($schema -ge 3 -and ($meta.PSObject.Properties.Name -contains "IconOverrideExports")) {
     foreach ($property in $meta.IconOverrideExports.PSObject.Properties) {
         $guid = $property.Name
