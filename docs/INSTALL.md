@@ -1,206 +1,199 @@
 # Installation
 
-This guide targets **Windows 10 64-bit**.
+Target: Windows 10 64-bit.
 
-## 1. Create a Windows restore point
+## Fast path
 
-Before changing the shell appearance:
+1. Clone the repository.
+2. Double-click Install.cmd.
+3. Approve UAC when Windows asks for elevation during restore-point/Open-Shell setup.
+4. Sign out and sign back in after the installer finishes.
 
-1. Press `Win + R`.
-2. Run `SystemPropertiesProtection.exe`.
-3. Enable protection for the Windows drive if needed.
-4. Click **Create**.
-5. Name the restore point:
+Command-line equivalent:
 
-```text
-Before Windows 95 Theme
-```
+    git clone https://github.com/TechSite-Solutions/windows-95-for-windows-10.git
+    cd windows-95-for-windows-10
+    Set-ExecutionPolicy -Scope Process Bypass
+    .\scripts\install.ps1
 
-The project also creates its own user-settings backup, but a System Restore point is an additional safety layer.
+## What the installer does
 
-## 2. Clone the project
+The installer is transactional at the user-settings level.
 
-```powershell
-git clone https://github.com/TechSite-Solutions/windows-95-for-windows-10.git
-cd windows-95-for-windows-10
-```
+Order:
 
-## 3. Allow scripts for this PowerShell process only
+1. verifies the Windows target;
+2. records whether RetroBar/Open-Shell already existed;
+3. creates a timestamped rollback backup;
+4. attempts to create a System Restore point;
+5. applies the Windows 95 base palette;
+6. applies classic shell/window metrics;
+7. enables classic desktop namespace icons and labels;
+8. downloads the pinned RetroBar release;
+9. verifies the RetroBar SHA-256 digest;
+10. installs/configures RetroBar;
+11. downloads the pinned Open-Shell release;
+12. verifies the Open-Shell SHA-256 digest;
+13. installs/configures Open-Shell;
+14. records state/last-install.json;
+15. starts the configured shell components;
+16. runs configuration verification.
 
-```powershell
-Set-ExecutionPolicy -Scope Process Bypass
-```
+If a theme-stage failure occurs after the backup is created, install.ps1 attempts to restore the saved appearance state automatically.
 
-This does not permanently change the machine execution policy.
+## Backup
 
-## 4. Check the machine
+Backups are written to:
 
-```powershell
-.\scripts\check-system.ps1
-```
+    backups\YYYYMMDD-HHMMSS\
 
-The project is intended for Windows 10. Do not force it onto another Windows version unless you are deliberately testing it.
+They can include:
 
-## 5. Run the automated installer
+- Windows color/desktop registry data;
+- cursor and AppEvents settings;
+- Open-Shell Start Menu registry settings;
+- desktop icon visibility settings;
+- desktop namespace label overrides;
+- RetroBar settings.json;
+- prior RetroBar autostart value;
+- metadata describing which components were already installed.
 
-```powershell
-.\scripts\install.ps1
-```
+backups/ is ignored by Git.
 
-The installer performs these stages:
+## System Restore
 
-1. creates a timestamped user-settings backup;
-2. applies the Windows 95 base palette;
-3. downloads the latest stable RetroBar installer from `dremin/RetroBar`;
-4. installs RetroBar and enables autostart;
-5. writes the RetroBar `Windows 95-98` profile;
-6. downloads the latest stable Open-Shell installer from `Open-Shell/Open-Shell-Menu`;
-7. installs the Open-Shell Start Menu feature;
-8. writes the Windows 95-oriented Open-Shell profile.
+The installer tries to create:
 
-Open-Shell installation may show a Windows UAC prompt.
+    Before Windows 95 Theme
 
-No RetroBar or Open-Shell binaries are stored in this repository.
+If System Restore is disabled or Windows refuses a restore point, the project continues using its own rollback backup and prints a warning.
 
-## 6. What gets configured
+## Third-party download security
 
-### Base Windows profile
+The project does not execute arbitrary latest-release files by default.
 
-The core palette includes:
+config/components.json pins:
 
-- Desktop: `#008080`
-- Button face: `#C0C0C0`
-- Active title: `#000080`
-- Active title text: `#FFFFFF`
-- Window: `#FFFFFF`
-- Window text: `#000000`
-- Highlight: `#000080`
+- exact upstream repository;
+- version/tag;
+- exact official release asset URL;
+- SHA-256 digest.
 
-### RetroBar
+The installer refuses to execute a downloaded asset whose hash does not match.
 
-The generated user profile selects:
+## Windows 95 base appearance
 
-- `Windows 95-98` theme;
+The default profile applies:
+
+- desktop teal #008080;
+- classic gray #C0C0C0;
+- active title navy #000080;
+- white title text;
+- classic selection colors;
+- classic-like 96-DPI shell metrics;
+- 32 px large and 16 px small icon size targets.
+
+Windows 10 can ignore some non-client metrics on DWM-rendered or custom-drawn applications.
+
+## RetroBar
+
+The installer configures RetroBar with:
+
+- Windows 95-98 theme;
 - clock enabled;
 - Quick Launch enabled;
-- one taskbar row;
-- no auto-hide;
-- no task thumbnails;
-- no modern desktop peek;
-- no task badges;
+- one row;
+- auto-hide disabled;
+- thumbnails disabled;
+- desktop peek disabled;
+- task badges disabled;
 - blur disabled;
-- classic-oriented font rendering options.
+- autostart enabled.
 
-RetroBar settings are stored under:
+Settings are stored at:
 
-```text
-%LOCALAPPDATA%\RetroBar\settings.json
-```
+    %LOCALAPPDATA%\RetroBar\settings.json
 
-### Open-Shell
+RetroBar owns the visible Windows 95-style Start button.
 
-The installer configures:
+## Open-Shell
 
-- Menu style: `Classic1`;
-- built-in skin: `Classic Skin`;
-- Windows key: Open-Shell classic menu;
-- Shift+Windows: Windows menu;
-- align menu to work area;
+Open-Shell is configured with:
+
+- Classic1 menu style;
+- Classic Skin;
+- Windows key opens ClassicMenu;
+- Shift+Windows opens WindowsMenu;
+- AlignToWorkArea enabled;
+- Open-Shell replacement Start button disabled;
 - glass disabled;
 - menu shadow disabled;
-- menu/submenu animation disabled;
-- classic-oriented font smoothing.
+- menu/submenu animation disabled.
 
-Open-Shell stores this profile under:
+Settings are stored at:
 
-```text
-HKCU\Software\OpenShell\StartMenu\Settings
-```
+    HKCU\Software\OpenShell\StartMenu\Settings
 
-## 7. Installation switches
+Open-Shell owns the classic menu while RetroBar owns the taskbar/Start button.
+
+## Classic desktop icons
+
+The installer enables Windows namespace desktop icons for:
+
+- My Computer;
+- Network Neighborhood;
+- My Documents;
+- Control Panel;
+- Recycle Bin.
+
+The underlying Windows 10 shell objects remain modern. Exact Windows 95 icon artwork can be supplied locally through the user-owned asset layer rather than redistributed publicly.
+
+## Installer switches
 
 Skip RetroBar:
 
-```powershell
-.\scripts\install.ps1 -SkipRetroBar
-```
+    .\scripts\install.ps1 -SkipRetroBar
 
 Skip Open-Shell:
 
-```powershell
-.\scripts\install.ps1 -SkipOpenShell
-```
+    .\scripts\install.ps1 -SkipOpenShell
 
-Do not launch RetroBar/Open-Shell immediately:
+Skip classic metrics:
 
-```powershell
-.\scripts\install.ps1 -NoLaunch
-```
+    .\scripts\install.ps1 -SkipMetrics
 
-You can also install/configure components separately:
+Skip classic desktop icon labels/visibility:
 
-```powershell
-.\scripts\install-retrobar.ps1
-.\scripts\configure-retrobar.ps1
+    .\scripts\install.ps1 -SkipDesktopIcons
 
-.\scripts\install-openshell.ps1
-.\scripts\configure-openshell.ps1
-```
+Skip restore-point attempt:
 
-## 8. Verify the setup
+    .\scripts\install.ps1 -SkipRestorePoint
 
-Run:
+Configure without launching RetroBar/Open-Shell immediately:
 
-```powershell
-.\scripts\status.ps1
-```
+    .\scripts\install.ps1 -NoLaunch
 
-It reports:
+## User-owned cursors and sounds
 
-- Windows version/build;
-- whether RetroBar is installed;
-- whether the RetroBar profile exists;
-- whether Open-Shell is installed;
-- whether Open-Shell settings exist;
-- current desktop/title/button colors;
-- whether the base Windows 95 palette is active.
+Prepare a folder as documented in ASSET-IMPORT.md, then run:
 
-## 9. Refresh the Windows shell
+    .\scripts\import-user-assets.ps1 -SourceDirectory "C:\MyWin95Assets" -ApplyCursors -ApplySounds
 
-For the most reliable result, **sign out and sign back in**.
+These files are copied only to the local PC. They are never committed by the project.
 
-A lighter refresh helper is also available:
+## Verify
 
-```powershell
-.\scripts\restart-explorer.ps1
-```
+Readable status:
 
-Restarting Explorer closes File Explorer windows, so save your work first.
+    .\scripts\status.ps1
 
-## 10. Optional local Windows 95 assets
+Strict configured-state verification:
 
-The public project cannot redistribute original Microsoft Windows 95 resources.
+    .\scripts\verify.ps1
 
-If you own suitable assets, place them in the ignored `local-assets\` tree and use the local import layer documented in:
+## Final refresh
 
-[../local-assets/README.md](../local-assets/README.md)
+Sign out and sign back in after installation for the most reliable update of cached shell metrics, desktop labels and appearance.
 
-## 11. Optional deeper window chrome
-
-Windows 10 does not expose enough supported theme controls to make every title bar, frame and caption button identical to Windows 95.
-
-The standard project therefore leaves protected Windows binaries untouched.
-
-For a deeper visual layer, WindowBlinds can be used manually. Treat this as optional because it changes more of the desktop rendering stack than RetroBar/Open-Shell.
-
-## Troubleshooting
-
-If the desktop still looks partly modern after installation, that is expected for applications that draw their own UI or for Windows 10 surfaces not controlled by classic color registry values.
-
-Run:
-
-```powershell
-.\scripts\status.ps1
-```
-
-Then sign out/in before diagnosing further.
+See TROUBLESHOOTING.md if a component still looks modern.
