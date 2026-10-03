@@ -44,7 +44,9 @@ $settings = [ordered]@{
     AllowBlurBehind         = $false
 }
 
-$settings | ConvertTo-Json -Depth 6 | Set-Content -Path $settingsFile -Encoding UTF8
+$json = $settings | ConvertTo-Json -Depth 6
+$utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+[System.IO.File]::WriteAllText($settingsFile, $json, $utf8NoBom)
 Write-Host "Wrote: $settingsFile"
 
 $retroBar = Get-RetroBarExe
