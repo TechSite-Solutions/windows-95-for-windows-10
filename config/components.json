@@ -1,0 +1,18 @@
+{
+  "retrobar": {
+    "version": "1.22.122",
+    "tag": "v1.22.122",
+    "repository": "dremin/RetroBar",
+    "asset": "RetroBar.Installer.zip",
+    "url": "https://github.com/dremin/RetroBar/releases/download/v1.22.122/RetroBar.Installer.zip",
+    "sha256": "6499a3b4411166c44a921546237033697a05cab61d69482a6339df1e9dd5849f"
+  },
+  "openshell": {
+    "version": "4.4.198",
+    "tag": "v4.4.198",
+    "repository": "Open-Shell/Open-Shell-Menu",
+    "asset": "OpenShellSetup_4_4_198.exe",
+    "url": "https://github.com/Open-Shell/Open-Shell-Menu/releases/download/v4.4.198/OpenShellSetup_4_4_198.exe",
+    "sha256": "a4d2d4459de55b5e962ba2a14f7bb794170511649138173dfa72949837b48c3f"
+  }
+}
